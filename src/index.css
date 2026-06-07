@@ -55,6 +55,12 @@
   border-color: var(--color-border);
 }
 
+html {
+  /* Prevent iOS double-tap zoom */
+  -webkit-text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+
 body {
   font-feature-settings: "rlig" 1, "calt" 1;
 }
