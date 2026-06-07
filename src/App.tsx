@@ -1,26 +1,38 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { ThemeProvider } from "@/contexts/ThemeContext"
+import { AuthProvider } from "@/contexts/AuthContext"
+import { ProtectedRoute } from "@/components/ProtectedRoute"
+import { AppLayout } from "@/components/layout/AppLayout"
+import { LoginPage } from "@/pages/login"
 import { DashboardPage } from "@/pages/dashboard"
 import { HutangPage } from "@/pages/hutang/page"
 import { PiutangPage } from "@/pages/piutang/page"
 import { AsetPage } from "@/pages/aset/page"
 import { LaporanPage } from "@/pages/laporan/page"
-import { Sidebar } from "@/components/sidebar"
+
+function ProtectedLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <ProtectedRoute>
+      <AppLayout>{children}</AppLayout>
+    </ProtectedRoute>
+  )
+}
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <div className="flex h-screen overflow-hidden">
-        <Sidebar />
-        <main className="flex-1 overflow-y-auto bg-muted/30">
+    <ThemeProvider defaultTheme="dark" storageKey="kos-ui-theme">
+      <AuthProvider>
+        <BrowserRouter>
           <Routes>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/hutang" element={<HutangPage />} />
-            <Route path="/piutang" element={<PiutangPage />} />
-            <Route path="/aset" element={<AsetPage />} />
-            <Route path="/laporan" element={<LaporanPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<ProtectedLayout><DashboardPage /></ProtectedLayout>} />
+            <Route path="/hutang" element={<ProtectedLayout><HutangPage /></ProtectedLayout>} />
+            <Route path="/piutang" element={<ProtectedLayout><PiutangPage /></ProtectedLayout>} />
+            <Route path="/aset" element={<ProtectedLayout><AsetPage /></ProtectedLayout>} />
+            <Route path="/laporan" element={<ProtectedLayout><LaporanPage /></ProtectedLayout>} />
           </Routes>
-        </main>
-      </div>
-    </BrowserRouter>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }

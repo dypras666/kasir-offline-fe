@@ -1,21 +1,12 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-
 export function AsetPage() {
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">Aset</h1>
-        <p className="text-sm text-muted-foreground mt-1">Modul Aset — coming soon</p>
+    <div className="p-4 md:p-8">
+      <h1 className="text-2xl font-bold tracking-tight">Manajemen Aset</h1>
+      <p className="text-muted-foreground mt-1">Daftar aset tetap dan penyusutan.</p>
+      
+      <div className="mt-8 rounded-lg border border-dashed p-20 text-center">
+        <p className="text-muted-foreground">Modul aset sedang dalam pengembangan.</p>
       </div>
-      <Card className="max-w-md">
-        <CardHeader>
-          <CardTitle>Aset</CardTitle>
-          <CardDescription>Halaman ini sedang dalam pengembangan.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">Fitur aset akan tersedia di rilis berikutnya.</p>
-        </CardContent>
-      </Card>
     </div>
   )
 }

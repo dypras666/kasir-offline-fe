@@ -1,8 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { Avatar } from "@/components/ui/avatar"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { 
   Wallet, 
@@ -12,12 +10,9 @@ import {
   Plus, 
   RefreshCw, 
   ArrowRight,
-  Bell,
-  Check,
   Database,
   Cloud,
   TrendingUp,
-  PackageCheck,
 } from "lucide-react"
 
 const recentTransactions = [
@@ -28,24 +23,17 @@ const recentTransactions = [
 ]
 
 const stats = [
-  { label: "Total Penjualan", value: "Rp 45.280.000", change: "+12.5%", icon: Wallet, color: "emerald" },
-  { label: "Hutang Jatuh Tempo", value: "Rp 12.450.000", change: "5 Invoice", icon: Clock, color: "amber" },
-  { label: "Stok Rendah", value: "Kritis", change: "8 SKU", icon: AlertTriangle, color: "red" },
-  { label: "Total Customer", value: "124", change: "+3 Hari ini", icon: Users, color: "indigo" },
+  { label: "Total Penjualan", value: "Rp 45.280.000", change: "+12.5%", icon: Wallet, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+  { label: "Hutang Jatuh Tempo", value: "Rp 12.450.000", change: "5 Invoice", icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10" },
+  { label: "Stok Rendah", value: "Kritis", change: "8 SKU", icon: AlertTriangle, color: "text-red-500", bg: "bg-red-500/10" },
+  { label: "Total Customer", value: "124", change: "+3 Hari ini", icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
 ]
-
-const colorMap: Record<string, { bg: string; text: string; icon: string }> = {
-  emerald: { bg: "bg-emerald-50", text: "text-emerald-600", icon: "text-emerald-600" },
-  amber: { bg: "bg-amber-50", text: "text-amber-600", icon: "text-amber-600" },
-  red: { bg: "bg-red-50", text: "text-red-600", icon: "text-red-600" },
-  indigo: { bg: "bg-indigo-50", text: "text-indigo-600", icon: "text-indigo-600" },
-}
 
 export function DashboardPage() {
   return (
-    <div className="space-y-8 p-8">
+    <div className="flex flex-col gap-8 p-4 md:p-8">
       {/* Header */}
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Ringkasan Operasional</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -53,112 +41,103 @@ export function DashboardPage() {
             Semua modul aktif — 113 test passed
           </p>
         </div>
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="icon" className="relative">
-            <Bell className="h-4 w-4" />
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">3</span>
-          </Button>
-          <Separator orientation="vertical" className="h-6" />
-          <Avatar src="https://ui-avatars.com/api/?name=Azzura+VN&background=6366f1&color=fff" alt="Azzura VN" fallback="AV" />
-          <span className="text-sm font-medium">Azzura VN</span>
-        </div>
       </header>
 
       {/* Stats Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => {
-          const c = colorMap[stat.color]
-          return (
-            <Card key={stat.label}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
-                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${c.bg}`}>
-                  <stat.icon className={`h-5 w-5 ${c.icon}`} />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  <Badge variant="outline" className="text-[10px]">{stat.change}</Badge>
-                </p>
-              </CardContent>
-            </Card>
-          )
-        })}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <Card key={stat.label}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
+              <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.bg}`}>
+                <stat.icon className={`h-5 w-5 ${stat.color}`} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                <Badge variant="outline" className="text-[10px]">{stat.change}</Badge>
+              </p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Main Content */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Table */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>Transaksi Terakhir</CardTitle>
-              <CardDescription>4 transaksi dalam 1 jam terakhir</CardDescription>
+              <CardDescription className="hidden sm:block">4 transaksi dalam 1 jam terakhir</CardDescription>
             </div>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="text-xs">
               Lihat Semua <ArrowRight className="ml-2 h-3 w-3" />
             </Button>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID Transaksi</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead className="text-right">Waktu</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentTransactions.map((tx) => (
-                  <TableRow key={tx.id}>
-                    <TableCell className="font-medium">{tx.id}</TableCell>
-                    <TableCell>{tx.customer}</TableCell>
-                    <TableCell>
-                      <Badge variant={tx.status === "success" ? "success" : tx.status === "partial" ? "warning" : "secondary"}>
-                        {tx.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-medium">Rp {tx.total}</TableCell>
-                    <TableCell className="text-right text-muted-foreground text-xs">{tx.time}</TableCell>
+          <CardContent className="p-0 sm:p-6 sm:pt-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">ID</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead className="hidden md:table-cell">Status</TableHead>
+                    <TableHead>Total</TableHead>
+                    <TableHead className="text-right hidden sm:table-cell">Waktu</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {recentTransactions.map((tx) => (
+                    <TableRow key={tx.id}>
+                      <TableCell className="font-medium">{tx.id}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span>{tx.customer}</span>
+                          <span className="text-[10px] text-muted-foreground md:hidden">{tx.status} • {tx.time}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <Badge variant={tx.status === "success" ? "secondary" : "outline"} className={tx.status === "success" ? "bg-emerald-500/10 text-emerald-500 border-none" : ""}>
+                          {tx.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-medium whitespace-nowrap">Rp {tx.total}</TableCell>
+                      <TableCell className="text-right text-muted-foreground text-xs hidden sm:table-cell">{tx.time}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
 
         {/* Quick Actions + Status */}
         <div className="space-y-6">
-          {/* Quick Actions */}
           <Card>
             <CardHeader>
               <CardTitle>Aksi Cepat</CardTitle>
-              <CardDescription>Fitur utama dalam satu klik</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <Button className="w-full justify-between" size="lg">
-                Input Penjualan Baru
+            <CardContent className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              <Button className="justify-between" size="lg">
+                Input Penjualan
                 <Plus className="h-4 w-4" />
               </Button>
-              <Button variant="outline" className="w-full justify-between" size="lg">
+              <Button variant="outline" className="justify-between" size="lg">
                 Update Stok
                 <RefreshCw className="h-4 w-4" />
               </Button>
-              <Button variant="outline" className="w-full justify-between" size="lg">
+              <Button variant="outline" className="justify-between" size="lg">
                 Bayar Hutang
-                <Check className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4" />
               </Button>
             </CardContent>
           </Card>
 
-          {/* System Status */}
           <Card>
             <CardHeader>
               <CardTitle>Status Sistem</CardTitle>
-              <CardDescription>Koneksi & layanan</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between rounded-lg border p-3">
@@ -166,10 +145,7 @@ export function DashboardPage() {
                   <Database className="h-4 w-4 text-emerald-500" />
                   <span className="text-sm font-medium">Database</span>
                 </div>
-                <Badge variant="success" className="text-[10px] gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
-                  Online
-                </Badge>
+                <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[10px]">Online</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg border p-3">
                 <div className="flex items-center gap-3">
@@ -177,13 +153,6 @@ export function DashboardPage() {
                   <span className="text-sm font-medium">Sync Cloud</span>
                 </div>
                 <Badge variant="secondary" className="text-[10px]">Idle</Badge>
-              </div>
-              <div className="flex items-center justify-between rounded-lg border p-3">
-                <div className="flex items-center gap-3">
-                  <PackageCheck className="h-4 w-4 text-emerald-500" />
-                  <span className="text-sm font-medium">Unit Tests</span>
-                </div>
-                <Badge variant="success" className="text-[10px]">113 Passed</Badge>
               </div>
             </CardContent>
           </Card>

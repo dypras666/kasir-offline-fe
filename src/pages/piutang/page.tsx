@@ -1,21 +1,12 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-
 export function PiutangPage() {
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">Piutang</h1>
-        <p className="text-sm text-muted-foreground mt-1">Modul Piutang — coming soon</p>
+    <div className="p-4 md:p-8">
+      <h1 className="text-2xl font-bold tracking-tight">Manajemen Piutang</h1>
+      <p className="text-muted-foreground mt-1">Kelola tagihan pelanggan dan piutang usaha.</p>
+      
+      <div className="mt-8 rounded-lg border border-dashed p-20 text-center">
+        <p className="text-muted-foreground">Modul piutang sedang dalam pengembangan.</p>
       </div>
-      <Card className="max-w-md">
-        <CardHeader>
-          <CardTitle>Piutang</CardTitle>
-          <CardDescription>Halaman ini sedang dalam pengembangan.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">Fitur piutang akan tersedia di rilis berikutnya.</p>
-        </CardContent>
-      </Card>
     </div>
   )
 }
