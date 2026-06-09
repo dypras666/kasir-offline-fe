@@ -67,6 +67,16 @@ export function StokOpnameDetailPage() {
 
   const fmt = (n: number) => n.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
+  const formatDate = (dateStr: string) => {
+    try {
+      const date = new Date(dateStr)
+      if (isNaN(date.getTime())) return dateStr
+      return date.toLocaleDateString("id-ID", { year: "numeric", month: "long", day: "numeric" })
+    } catch {
+      return dateStr
+    }
+  }
+
   const handlePdf = () => {
     const token = TOKEN()
     const url = `${BASE}/api/v1/stok-opnames/${id}/pdf`
@@ -138,7 +148,7 @@ export function StokOpnameDetailPage() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight">{data.kode_so}</h1>
             <p className="text-sm text-muted-foreground">
-              {data.tanggal} &middot; {data.warehouse?.name ?? "-"}
+              {formatDate(data.tanggal)} &middot; {data.warehouse?.name ?? "-"}
               &middot; {data.status === "completed" ? "✓ Selesai" : "Draft"}
             </p>
           </div>
