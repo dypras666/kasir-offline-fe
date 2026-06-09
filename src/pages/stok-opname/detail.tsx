@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Loader2, ArrowLeft, FileDown, FileText, ClipboardList, Package, TrendingUp, TrendingDown } from "lucide-react"
+import { formatMultiSatuan } from "@/lib/multi-unit"
 
 const BASE = import.meta.env.VITE_API_URL || ""
 const TOKEN = () => localStorage.getItem("token")
@@ -17,7 +18,14 @@ interface StokOpnameItem {
   stok_sistem: number
   stok_fisik: number
   selisih: number
-  product?: { id: number; name: string; sku: string; barcode: string }
+  product?: { 
+    id: number; 
+    name: string; 
+    sku: string; 
+    barcode: string;
+    unit?: { id: number; name: string };
+    units?: { id: number; name: string; conversion: number }[];
+  }
   unit?: { id: number; name: string }
 }
 
@@ -239,12 +247,46 @@ export function StokOpnameDetailPage() {
                   <TableCell className="text-xs font-mono text-muted-foreground">{idx + 1}</TableCell>
                   <TableCell className="font-mono text-xs">{item.product?.sku ?? "-"}</TableCell>
                   <TableCell className="font-medium">{item.product?.name ?? "Produk #" + item.product_id}</TableCell>
-                  <TableCell className="text-center font-mono">{fmt(Number(item.stok_sistem))}</TableCell>
-                  <TableCell className="text-center font-mono">{fmt(Number(item.stok_fisik))}</TableCell>
-                  <TableCell className={`text-center font-mono font-bold ${
+                  <TableCell className="text-center">
+                    <div className="font-mono">{fmt(Number(item.stok_sistem))}</div>
+                    {item.product?.units && item.product.units.length > 0 && (
+                      <div className="text-[10px] text-blue-600 font-medium">
+                        {formatMultiSatuan(
+                          Number(item.stok_sistem),
+                          item.product.units.map((u: any) => ({ name: u.name || u.unit_name, conversion: Number(u.conversion) })),
+                          item.product.unit?.name || "pcs"
+                        )}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <div className="font-mono">{fmt(Number(item.stok_fisik))}</div>
+                    {item.product?.units && item.product.units.length > 0 && (
+                      <div className="text-[10px] text-blue-600 font-medium">
+                        {formatMultiSatuan(
+                          Number(item.stok_fisik),
+                          item.product.units.map((u: any) => ({ name: u.name || u.unit_name, conversion: Number(u.conversion) })),
+                          item.product.unit?.name || "pcs"
+                        )}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell className={`text-center font-bold ${
                     Number(item.selisih) > 0 ? "text-emerald-600" : Number(item.selisih) < 0 ? "text-red-600" : ""
                   }`}>
-                    {Number(item.selisih) > 0 ? `+${fmt(Number(item.selisih))}` : fmt(Number(item.selisih))}
+                    <div className="font-mono">
+                      {Number(item.selisih) > 0 ? `+${fmt(Number(item.selisih))}` : fmt(Number(item.selisih))}
+                    </div>
+                    {item.product?.units && item.product.units.length > 0 && Number(item.selisih) !== 0 && (
+                      <div className="text-[10px] font-medium">
+                        {Number(item.selisih) > 0 ? "+" : ""}
+                        {formatMultiSatuan(
+                          Math.abs(Number(item.selisih)),
+                          item.product.units.map((u: any) => ({ name: u.name || u.unit_name, conversion: Number(u.conversion) })),
+                          item.product.unit?.name || "pcs"
+                        )}
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>
                     {Number(item.selisih) > 0 ? (

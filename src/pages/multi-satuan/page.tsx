@@ -51,13 +51,11 @@ export function MultiSatuanPage() {
         api.get("/units"),
       ])
       const allProducts: Product[] = resProds.data ?? resProds
-      // Show all products so users can add multi-satuan to any product
       setProducts(allProducts)
       setUnitsMaster(resUnits.data ?? resUnits)
       
       // Auto expand products with units
-      const withUnits = allProducts.filter((p) => p.units && p.units.length > 0)
-      setExpanded(new Set(withUnits.map((p) => p.id)))
+      setExpanded(new Set(allProducts.filter((p) => p.units && p.units.length > 0).map((p) => p.id)))
     } catch (err: any) {
       console.error(err)
       if (err?.status === 401 || err?.response?.status === 401) {
@@ -73,18 +71,21 @@ export function MultiSatuanPage() {
     fetchData()
   }, [])
 
-  // Only show products that have at least one multi-satuan entry
-  const withUnits = products.filter((p) => p.units && p.units.length > 0)
-
-  const filtered = withUnits.filter((p) => {
+  // Tampilkan SEMUA produk agar user bisa menambahkan multi-satuan ke produk yang belum punya
+  // (Sesuai feedback: "tampil semua data produk")
+  const filtered = products.filter((p) => {
     const q = search.toLowerCase()
     if (!q) return true
     return (
       p.name.toLowerCase().includes(q) ||
       p.sku.toLowerCase().includes(q) ||
-      p.units.some((u) => u.name.toLowerCase().includes(q))
+      p.units?.some((u) => u.name.toLowerCase().includes(q))
     )
   })
+
+  // Hitung jumlah produk yang sudah punya satuan (untuk header/summary)
+  const withUnitsCount = products.filter((p) => p.units && p.units.length > 0).length
+  const totalUnits = products.reduce((sum, p) => sum + (p.units?.length || 0), 0)
 
   const toggleExpand = (id: number) => {
     setExpanded((prev) => {
@@ -165,15 +166,13 @@ export function MultiSatuanPage() {
     }
   }
 
-  const totalUnits = withUnits.reduce((sum, p) => sum + p.units.length, 0)
-
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Multi Satuan</h1>
           <p className="text-sm text-muted-foreground">
-            Produk dengan konversi satuan (Lusin, Box, Pack, dll) — {withUnits.length} produk, {totalUnits} satuan
+            Produk dengan konversi satuan (Lusin, Box, Pack, dll) — {withUnitsCount} produk, {totalUnits} satuan
           </p>
         </div>
       </div>
@@ -215,7 +214,7 @@ export function MultiSatuanPage() {
           ) : filtered.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Layers className="h-12 w-12 mx-auto mb-2 opacity-20" />
-              {search ? "Tidak ada produk yang cocok" : "Belum ada produk dengan multi satuan"}
+              {search ? "Tidak ada produk yang cocok" : "Tidak ada data produk"}
             </div>
           ) : (
             <div className="divide-y">
@@ -244,68 +243,87 @@ export function MultiSatuanPage() {
                         <span className="text-xs text-muted-foreground ml-2">({product.sku})</span>
                       </div>
                       <span className="text-xs text-muted-foreground shrink-0">
-                        {product.units.length} satuan
+                        {product.units?.length || 0} satuan
                       </span>
                     </div>
 
                     {/* Expanded unit table */}
                     {isExpanded && (
                       <div className="bg-muted/30 px-4 pb-3">
-                        <div className="overflow-x-auto">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead className="text-xs">Satuan</TableHead>
-                                <TableHead className="text-xs">Isi (Konversi)</TableHead>
-                                <TableHead className="text-xs">Harga</TableHead>
-                                <TableHead className="text-xs">Barcode</TableHead>
-                                <TableHead className="text-xs text-right">Aksi</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {product.units.map((unit) => (
-                                <TableRow key={unit.id}>
-                                  <TableCell className="text-sm font-medium">{unit.name}</TableCell>
-                                  <TableCell className="text-sm">{unit.conversion} pcs</TableCell>
-                                  <TableCell className="text-sm">
-                                    {Number(unit.price) > 0
-                                      ? `Rp ${Number(unit.price).toLocaleString()}`
-                                      : "-"}
-                                  </TableCell>
-                                  <TableCell className="font-mono text-xs">
-                                    {unit.barcode || "-"}
-                                  </TableCell>
-                                  <TableCell className="text-right">
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-7 w-7"
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        handleEdit(product, unit)
-                                      }}
-                                    >
-                                      <Pencil className="h-3.5 w-3.5" />
-                                    </Button>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
-                        <div className="mt-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7 text-xs"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleAdd(product)
-                            }}
-                          >
-                            <Plus className="mr-1 h-3 w-3" /> Tambah Satuan
-                          </Button>
-                        </div>
+                        {product.units && product.units.length > 0 ? (
+                          <>
+                            <div className="overflow-x-auto">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead className="text-xs">Satuan</TableHead>
+                                    <TableHead className="text-xs">Isi (Konversi)</TableHead>
+                                    <TableHead className="text-xs">Harga</TableHead>
+                                    <TableHead className="text-xs">Barcode</TableHead>
+                                    <TableHead className="text-xs text-right">Aksi</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {product.units.map((unit) => (
+                                    <TableRow key={unit.id}>
+                                      <TableCell className="text-sm font-medium">{unit.name}</TableCell>
+                                      <TableCell className="text-sm">{unit.conversion} pcs</TableCell>
+                                      <TableCell className="text-sm">
+                                        {Number(unit.price) > 0
+                                          ? `Rp ${Number(unit.price).toLocaleString()}`
+                                          : "-"}
+                                      </TableCell>
+                                      <TableCell className="font-mono text-xs">
+                                        {unit.barcode || "-"}
+                                      </TableCell>
+                                      <TableCell className="text-right">
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-7 w-7"
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleEdit(product, unit)
+                                          }}
+                                        >
+                                          <Pencil className="h-3.5 w-3.5" />
+                                        </Button>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                            <div className="mt-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleAdd(product)
+                                }}
+                              >
+                                <Plus className="mr-1 h-3 w-3" /> Tambah Satuan
+                              </Button>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="py-4 text-center text-sm text-muted-foreground">
+                            <p>Belum ada satuan untuk produk ini</p>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="mt-2 h-7 text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleAdd(product)
+                              }}
+                            >
+                              <Plus className="mr-1 h-3 w-3" /> Tambah Satuan
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

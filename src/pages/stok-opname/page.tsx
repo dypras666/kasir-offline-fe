@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { RefreshCw, Plus, Loader2 } from "lucide-react"
+import { formatMultiSatuan } from "@/lib/multi-unit"
 
 const nowLocal = () => {
   const d = new Date()
@@ -33,6 +34,8 @@ interface ItemRow {
   stok_sistem: number
   stok_fisik: number
   selisih: number
+  unit_name: string
+  multi_unit: { name: string; conversion: number }[]
 }
 
 export function StokOpnamePage() {
@@ -76,7 +79,12 @@ export function StokOpnamePage() {
         sku: p.sku,
         stok_sistem: p.stock,
         stok_fisik: p.stock,
-        selisih: 0
+        selisih: 0,
+        unit_name: p.unit_name || "pcs",
+        multi_unit: (p.multi_unit || []).map((u: any) => ({
+          name: u.unit_name,
+          conversion: Number(u.conversion)
+        }))
       }))
       setFormData(prev => ({ ...prev, items: list }))
     } catch (err) { console.error(err) }
@@ -220,7 +228,14 @@ export function StokOpnamePage() {
                       <div className="font-medium">{item.product_name}</div>
                       <div className="text-[10px] text-muted-foreground font-mono">{item.sku}</div>
                     </TableCell>
-                    <TableCell className="text-center font-mono">{item.stok_sistem}</TableCell>
+                    <TableCell className="text-center">
+                      <div className="font-mono">{item.stok_sistem}</div>
+                      {item.multi_unit.length > 0 && (
+                        <div className="text-[10px] text-blue-600 font-medium">
+                          {formatMultiSatuan(item.stok_sistem, item.multi_unit, item.unit_name)}
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Input
                         type="number"
@@ -228,11 +243,21 @@ export function StokOpnamePage() {
                         value={item.stok_fisik}
                         onChange={e => updateItem(idx, parseFloat(e.target.value) || 0)}
                       />
+                      {item.multi_unit.length > 0 && (
+                        <div className="text-[10px] text-blue-600 font-medium text-center mt-0.5">
+                          {formatMultiSatuan(item.stok_fisik, item.multi_unit, item.unit_name)}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className={`text-center font-mono font-bold ${
                       item.selisih > 0 ? 'text-emerald-600' : item.selisih < 0 ? 'text-red-600' : ''
                     }`}>
-                      {item.selisih > 0 ? `+${item.selisih}` : item.selisih}
+                      <div>{item.selisih > 0 ? `+${item.selisih}` : item.selisih}</div>
+                      {item.multi_unit.length > 0 && item.selisih !== 0 && (
+                        <div className="text-[10px] font-medium">
+                          {item.selisih > 0 ? '+' : ''}{formatMultiSatuan(Math.abs(item.selisih), item.multi_unit, item.unit_name)}
+                        </div>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
