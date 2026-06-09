@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8085';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 interface ApiOptions {
   method?: string;
@@ -75,5 +75,86 @@ export const authApi = {
   logout: () =>
     api.post<{ message: string }>('/auth/logout'),
   me: () =>
-    api.get<{ data: AuthUser }>('/user'),
+    api.get<{ data: AuthUser }>('/auth/me'),
+};
+
+// Dashboard Types
+export interface DashboardData {
+  stats: {
+    total_sales: string;
+    sales_change: string;
+    pending_payables: string;
+    payable_invoices: number;
+    low_stock: number;
+    total_customers: number;
+    today_customers: number;
+  };
+  recent_invoices: Array<{
+    id: number;
+    invoice_number: string;
+    customer_name: string;
+    status: string;
+    total: string;
+    created_at: string;
+  }>;
+  aging_summary: Array<{
+    range: string;
+    total: string;
+    count: number;
+  }>;
+}
+
+// Branch Types
+export interface Branch {
+  id: number;
+  name: string;
+  type: string;
+  address: string;
+  phone: string;
+  code: string;
+  is_active: boolean;
+}
+
+// Account Types
+export interface Account {
+  id: number;
+  code: string;
+  name: string;
+  parent_id: number | null;
+  level: number;
+  type: string;
+  is_active: boolean;
+  children?: Account[];
+}
+
+// User / Role Types
+export interface UserData {
+  id: number;
+  name: string;
+  email: string;
+  roles: string[];
+}
+
+export interface RoleData {
+  id: number;
+  name: string;
+  permissions: string[];
+}
+
+// API Modules
+export const dashboardApi = {
+  get: () => api.get<DashboardData>('/dashboard'),
+};
+
+export const userApi = {
+  list: () => api.get<UserData[]>('/users'),
+  get: (id: number) => api.get<UserData>(`/users/${id}`),
+  create: (data: { name: string; email: string; password: string; role: string }) =>
+    api.post<UserData>('/users', data),
+  update: (id: number, data: { name?: string; email?: string; password?: string; role?: string }) =>
+    api.put<UserData>(`/users/${id}`, data),
+  delete: (id: number) => api.delete<{ message: string }>(`/users/${id}`),
+  assignRole: (id: number, role: string) =>
+    api.post<{ message: string }>(`/users/${id}/assign-role`, { role }),
+  roles: () => api.get<RoleData[]>('/roles'),
 };

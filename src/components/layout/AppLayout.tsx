@@ -12,6 +12,7 @@ import {
   HandCoins,
   Building2,
   BarChart3,
+  BookOpen,
   LogOut,
   Store,
   Menu,
@@ -19,21 +20,57 @@ import {
   Sun,
   Moon,
   User,
+  Users,
+  Landmark,
+  Truck,
+  Contact,
+  Warehouse,
+  ShoppingCart,
+  Layers,
+  RefreshCw,
+  ArrowLeftRight,
+  AlertTriangle,
+  Wallet,
 } from "lucide-react"
 
-const navItems = [
+const mainItems = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/" },
-  { label: "Inventori", icon: Package, href: "/inventory" },
   { label: "Hutang", icon: CreditCard, href: "/hutang" },
   { label: "Piutang", icon: HandCoins, href: "/piutang" },
   { label: "Aset", icon: Building2, href: "/aset" },
+  { label: "Akuntansi", icon: BookOpen, href: "/akuntansi" },
   { label: "Laporan", icon: BarChart3, href: "/laporan" },
+]
+
+const masterDataItems = [
+  { label: "Produk", icon: Package, href: "/produk" },
+  { label: "Satuan", icon: Layers, href: "/satuan" },
+  { label: "Multi Satuan", icon: Layers, href: "/multi-satuan" },
+  { label: "Pembelian", icon: ShoppingCart, href: "/purchasing" },
+  { label: "Stok Opname", icon: RefreshCw, href: "/stok-opname" },
+  { label: "Mutasi Stok", icon: ArrowLeftRight, href: "/mutasi-stok" },
+  { label: "Lost Inventory", icon: AlertTriangle, href: "/lost-inventory" },
+  { label: "Supplier", icon: Truck, href: "/supplier" },
+  { label: "Pelanggan", icon: Contact, href: "/pelanggan" },
+  { label: "Gudang", icon: Warehouse, href: "/gudang" },
+]
+
+const adminItems = [
+  { label: "Cabang", icon: Store, href: "/cabang" },
+  { label: "Akun (COA)", icon: Landmark, href: "/akun" },
+  { label: "Metode Bayar", icon: Wallet, href: "/metode-pembayaran" },
+  { label: "Pengguna", icon: Users, href: "/pengguna" },
 ]
 
 function SidebarNav({ onNavClick }: { onNavClick?: () => void }) {
   const location = useLocation()
   const { user, logout } = useAuth()
   const { theme, setTheme } = useTheme()
+
+  const isActive = (href: string) => {
+    if (href === '/') return location.pathname === '/'
+    return location.pathname.startsWith(href)
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -48,15 +85,38 @@ function SidebarNav({ onNavClick }: { onNavClick?: () => void }) {
       {/* Nav */}
       <ScrollArea className="flex-1 px-3 py-4">
         <nav className="flex flex-col gap-1">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.href
-            return (
+          {mainItems.map((item) => (
+            <Button
+              key={item.href}
+              variant={isActive(item.href) ? "secondary" : "ghost"}
+              className={cn(
+                "w-full justify-start gap-3",
+                isActive(item.href) && "font-medium"
+              )}
+              asChild
+              onClick={onNavClick}
+            >
+              <Link to={item.href}>
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </Link>
+            </Button>
+          ))}
+        </nav>
+
+        {/* Master Data section */}
+        <div className="mt-4">
+          <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Master Data
+          </p>
+          <nav className="flex flex-col gap-1">
+            {masterDataItems.map((item) => (
               <Button
                 key={item.href}
-                variant={isActive ? "secondary" : "ghost"}
+                variant={isActive(item.href) ? "secondary" : "ghost"}
                 className={cn(
                   "w-full justify-start gap-3",
-                  isActive && "font-medium"
+                  isActive(item.href) && "font-medium"
                 )}
                 asChild
                 onClick={onNavClick}
@@ -66,14 +126,39 @@ function SidebarNav({ onNavClick }: { onNavClick?: () => void }) {
                   {item.label}
                 </Link>
               </Button>
-            )
-          })}
-        </nav>
+            ))}
+          </nav>
+        </div>
+
+        {/* Admin section */}
+        <div className="mt-4">
+          <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Admin
+          </p>
+          <nav className="flex flex-col gap-1">
+            {adminItems.map((item) => (
+              <Button
+                key={item.href}
+                variant={isActive(item.href) ? "secondary" : "ghost"}
+                className={cn(
+                  "w-full justify-start gap-3",
+                  isActive(item.href) && "font-medium"
+                )}
+                asChild
+                onClick={onNavClick}
+              >
+                <Link to={item.href}>
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              </Button>
+            ))}
+          </nav>
+        </div>
       </ScrollArea>
 
       {/* Footer */}
       <div className="border-t p-4 space-y-2">
-        {/* User info */}
         {user && (
           <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-3 py-2 mb-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
@@ -86,21 +171,15 @@ function SidebarNav({ onNavClick }: { onNavClick?: () => void }) {
           </div>
         )}
 
-        {/* Theme toggle */}
         <Button
           variant="ghost"
           className="w-full justify-start gap-3 text-muted-foreground"
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
         >
-          {theme === "dark" ? (
-            <Sun className="h-4 w-4" />
-          ) : (
-            <Moon className="h-4 w-4" />
-          )}
+          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           {theme === "dark" ? "Mode Terang" : "Mode Gelap"}
         </Button>
 
-        {/* Logout */}
         <Button
           variant="ghost"
           className="w-full justify-start gap-3 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
@@ -129,12 +208,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile sheet */}
       {mobileOpen && (
         <>
-          {/* Overlay */}
-          <div 
-            className="fixed inset-0 z-40 bg-black/50 lg:hidden" 
-            onClick={() => setMobileOpen(false)} 
+          <div
+            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            onClick={() => setMobileOpen(false)}
           />
-          {/* Drawer */}
           <div className="fixed inset-y-0 left-0 z-50 w-72 bg-card shadow-xl lg:hidden animate-in slide-in-from-left">
             <div className="flex justify-end p-2">
               <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)}>
@@ -148,7 +225,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top bar (mobile) */}
         <header className="flex h-14 items-center justify-between border-b bg-card px-4 lg:px-6 lg:hidden">
           <Button variant="ghost" size="icon" onClick={() => setMobileOpen(true)}>
             <Menu className="h-5 w-5" />
@@ -174,7 +250,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        {/* Page content */}
         <main className="flex-1 overflow-y-auto bg-muted/10">
           {children}
         </main>
