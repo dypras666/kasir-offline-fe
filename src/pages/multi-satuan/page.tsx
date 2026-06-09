@@ -54,6 +54,10 @@ export function MultiSatuanPage() {
       // Show all products so users can add multi-satuan to any product
       setProducts(allProducts)
       setUnitsMaster(resUnits.data ?? resUnits)
+      
+      // Auto expand products with units
+      const withUnits = allProducts.filter((p) => p.units && p.units.length > 0)
+      setExpanded(new Set(withUnits.map((p) => p.id)))
     } catch (err: any) {
       console.error(err)
       if (err?.status === 401 || err?.response?.status === 401) {
@@ -69,7 +73,10 @@ export function MultiSatuanPage() {
     fetchData()
   }, [])
 
-  const filtered = products.filter((p) => {
+  // Only show products that have at least one multi-satuan entry
+  const withUnits = products.filter((p) => p.units && p.units.length > 0)
+
+  const filtered = withUnits.filter((p) => {
     const q = search.toLowerCase()
     if (!q) return true
     return (
@@ -158,7 +165,7 @@ export function MultiSatuanPage() {
     }
   }
 
-  const totalUnits = products.reduce((sum, p) => sum + p.units.length, 0)
+  const totalUnits = withUnits.reduce((sum, p) => sum + p.units.length, 0)
 
   return (
     <div className="p-6 space-y-6">
@@ -166,7 +173,7 @@ export function MultiSatuanPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Multi Satuan</h1>
           <p className="text-sm text-muted-foreground">
-            Produk dengan konversi satuan (Lusin, Box, Pack, dll) — {products.length} produk, {totalUnits} satuan
+            Produk dengan konversi satuan (Lusin, Box, Pack, dll) — {withUnits.length} produk, {totalUnits} satuan
           </p>
         </div>
       </div>
