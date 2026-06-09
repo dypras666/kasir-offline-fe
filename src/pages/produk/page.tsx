@@ -52,6 +52,13 @@ interface Warehouse {
   is_pusat: boolean
 }
 
+interface ProductStock {
+  id?: number
+  branch_id?: number
+  warehouse_id?: number
+  stock: number
+}
+
 interface Product {
   id: number
   name: string
@@ -62,6 +69,7 @@ interface Product {
   unit_id?: number
   units?: ProductUnit[]
   prices?: ProductPrice[]
+  stocks?: ProductStock[]
 }
 
 export function ProdukPage() {
@@ -74,6 +82,8 @@ export function ProdukPage() {
   const [editing, setEditing] = useState<Product | null>(null)
   const [showBranchPrices, setShowBranchPrices] = useState(false)
   const [showWarehousePrices, setShowWarehousePrices] = useState(false)
+  const [showBranchStocks, setShowBranchStocks] = useState(false)
+  const [showWarehouseStocks, setShowWarehouseStocks] = useState(false)
   const [expandedUnitBranchPrices, setExpandedUnitBranchPrices] = useState<Record<number, boolean>>({})
   const [expandedUnitWarehousePrices, setExpandedUnitWarehousePrices] = useState<Record<number, boolean>>({})
   const [formData, setFormData] = useState({ 
@@ -84,7 +94,8 @@ export function ProdukPage() {
     barcode: "",
     unit_id: undefined as number | undefined,
     units: [] as ProductUnit[],
-    prices: [] as ProductPrice[]
+    prices: [] as ProductPrice[],
+    stocks: [] as ProductStock[]
   })
 
   const fetchData = async () => {
@@ -142,6 +153,38 @@ export function ProdukPage() {
 
   const getWarehousePrice = (warehouseId: number) => {
     return formData.prices.find(p => p.warehouse_id === warehouseId)?.price || 0
+  }
+
+  // === Stok Cabang ===
+  const updateBranchStock = (branchId: number, value: number) => {
+    const idx = formData.stocks.findIndex(s => s.branch_id === branchId)
+    const stocks = [...formData.stocks]
+    if (idx >= 0) {
+      stocks[idx] = { ...stocks[idx], stock: value }
+    } else {
+      stocks.push({ branch_id: branchId, stock: value })
+    }
+    setFormData({ ...formData, stocks })
+  }
+
+  const getBranchStock = (branchId: number) => {
+    return formData.stocks.find(s => s.branch_id === branchId)?.stock || 0
+  }
+
+  // === Stok Gudang ===
+  const updateWarehouseStock = (warehouseId: number, value: number) => {
+    const idx = formData.stocks.findIndex(s => s.warehouse_id === warehouseId)
+    const stocks = [...formData.stocks]
+    if (idx >= 0) {
+      stocks[idx] = { ...stocks[idx], stock: value }
+    } else {
+      stocks.push({ warehouse_id: warehouseId, stock: value })
+    }
+    setFormData({ ...formData, stocks })
+  }
+
+  const getWarehouseStock = (warehouseId: number) => {
+    return formData.stocks.find(s => s.warehouse_id === warehouseId)?.stock || 0
   }
 
   // === Harga Cabang (multi satuan level) ===
@@ -246,6 +289,7 @@ export function ProdukPage() {
       const payload = {
         ...formData,
         prices: formData.prices.filter(p => p.price > 0),
+        stocks: formData.stocks.filter(s => s.stock >= 0),
         units: formData.units.map(u => ({
           ...u,
           prices: u.prices?.filter(p => p.price > 0) || [],
@@ -259,7 +303,7 @@ export function ProdukPage() {
       }
       setOpen(false)
       setEditing(null)
-      setFormData({ name: "", sku: "", price: 0, stock: 0, barcode: "", unit_id: undefined, units: [], prices: [] })
+      setFormData({ name: "", sku: "", price: 0, stock: 0, barcode: "", unit_id: undefined, units: [], prices: [], stocks: [] })
       fetchData()
     } catch {
       alert("Gagal menyimpan data")
@@ -280,7 +324,8 @@ export function ProdukPage() {
         prices: (u as any).prices?.map((p: any) => ({ branch_id: p.branch_id, price: Number(p.price) })) || [],
         warehouse_prices: (u as any).warehouse_prices?.map((p: any) => ({ warehouse_id: p.warehouse_id, price: Number(p.price) })) || []
       })) || [],
-      prices: item.prices?.length ? item.prices : []
+      prices: item.prices?.length ? item.prices : [],
+      stocks: item.stocks?.length ? item.stocks.map(s => ({ ...s, stock: Number(s.stock) })) : []
     })
     setOpen(true)
   }
@@ -296,7 +341,7 @@ export function ProdukPage() {
   }
 
   // Count total columns for colSpan
-  const totalCols = 6 + branches.length + warehouses.length
+  const totalCols = 6 + (branches.length * 2) + (warehouses.length * 2)
 
   return (
     <div className="p-6 space-y-6">
@@ -304,7 +349,7 @@ export function ProdukPage() {
         <h1 className="text-3xl font-bold tracking-tight">Data Produk</h1>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => { setEditing(null); setFormData({ name: "", sku: "", price: 0, stock: 0, barcode: "", unit_id: undefined, units: [], prices: [] }) }}>
+            <Button onClick={() => { setEditing(null); setFormData({ name: "", sku: "", price: 0, stock: 0, barcode: "", unit_id: undefined, units: [], prices: [], stocks: [] }) }}>
               <Plus className="mr-2 h-4 w-4" /> Tambah Produk
             </Button>
           </DialogTrigger>
@@ -609,6 +654,76 @@ export function ProdukPage() {
                 )}
               </div>
 
+              {/* Stok Default per Cabang */}
+              <div className="space-y-3 rounded-lg border p-3">
+                <div className="flex items-center justify-between">
+                  <Button type="button" variant="ghost" size="sm" className="p-0 h-auto font-semibold text-sm hover:bg-transparent flex items-center gap-1" onClick={() => setShowBranchStocks(!showBranchStocks)}>
+                    {showBranchStocks ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    <Building2 className="h-4 w-4" />
+                    Stok per Cabang
+                    <span className="text-xs text-muted-foreground font-normal">({formData.stocks.filter(s => s.branch_id && s.stock >= 0).length} diset)</span>
+                  </Button>
+                </div>
+                {showBranchStocks && (
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted-foreground">Kosongkan jika stok sama dengan stok default</p>
+                    {branches.map(branch => (
+                      <div key={branch.id} className="grid grid-cols-[1fr_1.5fr] gap-3 items-center">
+                        <div>
+                          <label className="text-xs font-medium">{branch.name}</label>
+                          <p className="text-[10px] text-muted-foreground">{branch.code}</p>
+                        </div>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">Qty</span>
+                          <Input
+                            type="number"
+                            placeholder={String(formData.stock || 0)}
+                            value={getBranchStock(branch.id) || ""}
+                            onChange={e => updateBranchStock(branch.id, Number(e.target.value))}
+                            className="pl-9 h-9 text-sm"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Stok Default per Gudang */}
+              <div className="space-y-3 rounded-lg border p-3">
+                <div className="flex items-center justify-between">
+                  <Button type="button" variant="ghost" size="sm" className="p-0 h-auto font-semibold text-sm hover:bg-transparent flex items-center gap-1" onClick={() => setShowWarehouseStocks(!showWarehouseStocks)}>
+                    {showWarehouseStocks ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    <Warehouse className="h-4 w-4" />
+                    Stok per Gudang
+                    <span className="text-xs text-muted-foreground font-normal">({formData.stocks.filter(s => s.warehouse_id && s.stock >= 0).length} diset)</span>
+                  </Button>
+                </div>
+                {showWarehouseStocks && (
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted-foreground">Kosongkan jika stok sama dengan stok default</p>
+                    {warehouses.map(wh => (
+                      <div key={wh.id} className="grid grid-cols-[1fr_1.5fr] gap-3 items-center">
+                        <div>
+                          <label className="text-xs font-medium">{wh.name}</label>
+                          <p className="text-[10px] text-muted-foreground">{wh.is_pusat ? "Pusat" : "Cabang"}</p>
+                        </div>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">Qty</span>
+                          <Input
+                            type="number"
+                            placeholder={String(formData.stock || 0)}
+                            value={getWarehouseStock(wh.id) || ""}
+                            onChange={e => updateWarehouseStock(wh.id, Number(e.target.value))}
+                            className="pl-9 h-9 text-sm"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <Button type="submit" className="w-full">Simpan</Button>
             </form>
           </DialogContent>
@@ -676,6 +791,8 @@ export function ProdukPage() {
                   <TableHead>Harga Default</TableHead>
                   <TableHead colSpan={branches.length} className="bg-muted/50 text-center text-xs">Harga per Cabang</TableHead>
                   <TableHead colSpan={warehouses.length} className="bg-muted/30 text-center text-xs">Harga per Gudang</TableHead>
+                  <TableHead colSpan={branches.length} className="bg-green-50 dark:bg-green-950/30 text-center text-xs">Stok per Cabang</TableHead>
+                  <TableHead colSpan={warehouses.length} className="bg-teal-50 dark:bg-teal-950/30 text-center text-xs">Stok per Gudang</TableHead>
                   <TableHead className="text-right">Aksi</TableHead>
                 </TableRow>
                 <TableRow>
@@ -691,6 +808,12 @@ export function ProdukPage() {
                   ))}
                   {warehouses.map(w => (
                     <TableHead key={w.id} className="text-xs whitespace-nowrap text-center">{w.name.replace("Gudang ", "G.")}</TableHead>
+                  ))}
+                  {branches.map(b => (
+                    <TableHead key={`sb-${b.id}`} className="text-xs whitespace-nowrap text-center">{b.code}</TableHead>
+                  ))}
+                  {warehouses.map(w => (
+                    <TableHead key={`sw-${w.id}`} className="text-xs whitespace-nowrap text-center">{w.name.replace("Gudang ", "G.")}</TableHead>
                   ))}
                   <TableHead className="hidden" aria-hidden />
                 </TableRow>
@@ -728,6 +851,26 @@ export function ProdukPage() {
                       return (
                         <TableCell key={w.id} className="text-xs text-center">
                           {wp ? `Rp ${Number(wp.price).toLocaleString()}` : (
+                            <span className="text-muted-foreground italic">—</span>
+                          )}
+                        </TableCell>
+                      )
+                    })}
+                    {branches.map(b => {
+                      const bs = item.stocks?.find(s => s.branch_id === b.id)
+                      return (
+                        <TableCell key={`sb-${b.id}`} className="text-xs text-center">
+                          {bs ? Number(bs.stock).toLocaleString() : (
+                            <span className="text-muted-foreground italic">—</span>
+                          )}
+                        </TableCell>
+                      )
+                    })}
+                    {warehouses.map(w => {
+                      const ws = item.stocks?.find(s => s.warehouse_id === w.id)
+                      return (
+                        <TableCell key={`sw-${w.id}`} className="text-xs text-center">
+                          {ws ? Number(ws.stock).toLocaleString() : (
                             <span className="text-muted-foreground italic">—</span>
                           )}
                         </TableCell>

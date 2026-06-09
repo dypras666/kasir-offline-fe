@@ -8,8 +8,11 @@ import { PurchasingPage } from "@/pages/purchasing/page"
 import { ProdukPage } from "@/pages/produk/page"
 import { SatuanPage } from "@/pages/satuan/page"
 import { MultiSatuanPage } from "@/pages/multi-satuan/page"
+import { StokPage } from "@/pages/stok/page"
 import { StokOpnamePage } from "@/pages/stok-opname/page"
+import { StokOpnameDetailPage } from "@/pages/stok-opname/detail"
 import { MutasiStokPage } from "@/pages/mutasi-stok/page"
+import { MutasiStokDetailPage } from "@/pages/mutasi-stok/detail"
 import { LostInventoryPage } from "@/pages/lost-inventory/page"
 import { SupplierPage } from "@/pages/supplier/page"
 import { CustomerPage } from "@/pages/pelanggan/page"
@@ -44,10 +47,13 @@ function App() {
             <Route path="/produk" element={<ProtectedRoute><AppLayout><ProdukPage /></AppLayout></ProtectedRoute>} />
             <Route path="/satuan" element={<ProtectedRoute><AppLayout><SatuanPage /></AppLayout></ProtectedRoute>} />
             <Route path="/multi-satuan" element={<ProtectedRoute><AppLayout><MultiSatuanPage /></AppLayout></ProtectedRoute>} />
+            <Route path="/stok" element={<ProtectedRoute><AppLayout><StokPage /></AppLayout></ProtectedRoute>} />
             <Route path="/purchasing" element={<ProtectedRoute><AppLayout><PurchasingPage /></AppLayout></ProtectedRoute>} />
             <Route path="/purchasing/:id" element={<ProtectedRoute><AppLayout><PurchasingPage /></AppLayout></ProtectedRoute>} />
             <Route path="/stok-opname" element={<ProtectedRoute><AppLayout><StokOpnamePage /></AppLayout></ProtectedRoute>} />
+            <Route path="/stok-opname/:id" element={<ProtectedRoute><AppLayout><StokOpnameDetailPage /></AppLayout></ProtectedRoute>} />
             <Route path="/mutasi-stok" element={<ProtectedRoute><AppLayout><MutasiStokPage /></AppLayout></ProtectedRoute>} />
+            <Route path="/mutasi-stok/:id" element={<ProtectedRoute><AppLayout><MutasiStokDetailPage /></AppLayout></ProtectedRoute>} />
             <Route path="/lost-inventory" element={<ProtectedRoute><AppLayout><LostInventoryPage /></AppLayout></ProtectedRoute>} />
             <Route path="/supplier" element={<ProtectedRoute><AppLayout><SupplierPage /></AppLayout></ProtectedRoute>} />
             <Route path="/pelanggan" element={<ProtectedRoute><AppLayout><CustomerPage /></AppLayout></ProtectedRoute>} />

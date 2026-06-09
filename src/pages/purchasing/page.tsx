@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, ArrowLeft, Save, Search, Warehouse, DollarSign, Calendar, Check, ChevronsUpDown, X, Eye, PackageCheck, SlidersHorizontal } from "lucide-react"
+import { Plus, Trash2, ArrowLeft, Save, Search, Warehouse, DollarSign, Calendar, Check, ChevronsUpDown, X, Eye, PackageCheck, RefreshCw, SlidersHorizontal } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -155,7 +155,29 @@ export function PurchasingPage() {
   const [data, setData] = useState<PurchaseInvoice[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  
+
+  const formatDate = (d: string | null | undefined) => {
+    if (!d) return "-"
+    try {
+      const date = new Date(d)
+      if (isNaN(date.getTime())) return d
+      return date.toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" })
+    } catch {
+      return d
+    }
+  }
+
+  const formatDateTime = (d: string | null | undefined) => {
+    if (!d) return "-"
+    try {
+      const date = new Date(d)
+      if (isNaN(date.getTime())) return d
+      return date.toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+    } catch {
+      return d
+    }
+  }
+
   // Master Data
   const [products, setProducts] = useState<Product[]>([])
   const [warehouses, setWarehouses] = useState<WarehouseData[]>([])
@@ -364,6 +386,15 @@ export function PurchasingPage() {
       fetchData(); fetchStats();
       if (view === "detail") fetchDetail(id)
     } catch (err: any) { toast.error(err.message || "Gagal proses stok") }
+  }
+
+  const handleReissueStock = async (id: number) => {
+    try {
+      await api.post(`/purchase-invoices/${id}/reissue-stock`)
+      toast.success("Reissue stok berhasil — stok yang belum masuk telah ditambahkan")
+      fetchData(); fetchStats();
+      if (view === "detail") fetchDetail(id)
+    } catch (err: any) { toast.error(err.message || "Gagal reissue stok") }
   }
 
   const handlePaymentSubmit = async () => {
@@ -611,7 +642,7 @@ export function PurchasingPage() {
                 <TableRow key={inv.id}>
                   <TableCell className="text-center text-xs text-muted-foreground">{idx + 1}</TableCell>
                   <TableCell className="font-mono text-xs">{inv.invoice_number}</TableCell>
-                  <TableCell className="text-sm">{inv.invoice_date}</TableCell>
+                  <TableCell className="text-sm">{formatDate(inv.invoice_date)}</TableCell>
                   <TableCell className="text-sm font-medium">{inv.supplier?.name}</TableCell>
                   <TableCell className="text-right font-mono text-sm">Rp {Number(inv.total_amount).toLocaleString()}</TableCell>
                   <TableCell>
@@ -664,7 +695,7 @@ export function PurchasingPage() {
               </div>
               <div className="p-4 border rounded-lg bg-muted/20">
                  <div className="text-[10px] text-muted-foreground uppercase font-semibold">Tanggal</div>
-                 <div className="text-base font-bold">{detailItem.invoice_date}</div>
+                 <div className="text-base font-bold">{formatDate(detailItem.invoice_date)}</div>
               </div>
               <div className="p-4 border rounded-lg bg-muted/20">
                  <div className="text-[10px] text-muted-foreground uppercase font-semibold">Input Stok</div>
@@ -683,6 +714,16 @@ export function PurchasingPage() {
                     <p className="text-xs text-amber-700 dark:text-amber-500 leading-relaxed">Invoice sudah dicatat tapi stok belum masuk ke gudang. Klik tombol di samping setelah barang selesai dicek.</p>
                   </div>
                   <Button className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white" onClick={() => handleProcessStock(detailItem.id)}><PackageCheck className="mr-2 h-4 w-4" /> Simpan Stok Sekarang</Button>
+               </div>
+            )}
+
+            {detailItem.processed_at && (
+               <div className="mb-6 p-4 border border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <h4 className="font-bold text-emerald-800 dark:text-emerald-400">Stok Sudah Diproses</h4>
+                    <p className="text-xs text-emerald-700 dark:text-emerald-500 leading-relaxed">Stok dari transaksi ini sudah diproses. Jika ada item yang stoknya tidak masuk (misalnya karena error sistem), klik Reissue Stok untuk mengisi data yang kurang.</p>
+                  </div>
+                  <Button variant="outline" className="w-full sm:w-auto border-emerald-600 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/40" onClick={() => handleReissueStock(detailItem.id)}><RefreshCw className="mr-2 h-4 w-4" /> Reissue Stok</Button>
                </div>
             )}
  
@@ -722,7 +763,7 @@ export function PurchasingPage() {
                         <div className="text-xs font-bold uppercase text-muted-foreground mb-3">Riwayat Pembayaran</div>
                         {payableDetail.payments?.map((p:any, i:number) => (
                           <div key={i} className="flex justify-between items-center py-2 border-b last:border-0 text-xs">
-                             <div className="flex items-center gap-2"><Calendar className="h-3 w-3" /> <span>{p.date}</span> <span className="text-muted-foreground">• {p.payment_method?.name || "Cash"} • {p.reference_no}</span></div>
+                             <div className="flex items-center gap-2"><Calendar className="h-3 w-3" /> <span>{formatDateTime(p.created_at || p.date)}</span> <span className="text-muted-foreground">• {p.payment_method?.name || "Cash"} • {p.reference_no}</span></div>
                              <div className="font-bold">Rp {Number(p.amount).toLocaleString()}</div>
                           </div>
                         ))}

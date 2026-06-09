@@ -31,6 +31,9 @@ import {
   ArrowLeftRight,
   AlertTriangle,
   Wallet,
+  ChevronDown,
+  ChevronRight,
+  ClipboardList,
 } from "lucide-react"
 
 const mainItems = [
@@ -46,6 +49,7 @@ const masterDataItems = [
   { label: "Produk", icon: Package, href: "/produk" },
   { label: "Satuan", icon: Layers, href: "/satuan" },
   { label: "Multi Satuan", icon: Layers, href: "/multi-satuan" },
+  { label: "Stok", icon: ClipboardList, href: "/stok" },
   { label: "Pembelian", icon: ShoppingCart, href: "/purchasing" },
   { label: "Stok Opname", icon: RefreshCw, href: "/stok-opname" },
   { label: "Mutasi Stok", icon: ArrowLeftRight, href: "/mutasi-stok" },
@@ -71,6 +75,13 @@ function SidebarNav({ onNavClick }: { onNavClick?: () => void }) {
     if (href === '/') return location.pathname === '/'
     return location.pathname.startsWith(href)
   }
+
+  // Determine initial state based on active path
+  const isMasterDataActive = masterDataItems.some(item => isActive(item.href))
+  const isAdminActive = adminItems.some(item => isActive(item.href))
+
+  const [masterOpen, setMasterOpen] = useState(isMasterDataActive || false)
+  const [adminOpen, setAdminOpen] = useState(isAdminActive || false)
 
   return (
     <div className="flex h-full flex-col">
@@ -106,62 +117,86 @@ function SidebarNav({ onNavClick }: { onNavClick?: () => void }) {
 
         {/* Master Data section */}
         <div className="mt-4">
-          <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-            Master Data
-          </p>
-          <nav className="flex flex-col gap-1">
-            {masterDataItems.map((item) => (
-              <Button
-                key={item.href}
-                variant={isActive(item.href) ? "secondary" : "ghost"}
-                className={cn(
-                  "w-full justify-start gap-3",
-                  isActive(item.href) && "font-medium"
-                )}
-                asChild
-                onClick={onNavClick}
-              >
-                <Link to={item.href}>
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              </Button>
-            ))}
-          </nav>
+          <div 
+            className="flex items-center justify-between mb-1 px-3 py-1 cursor-pointer group"
+            onClick={() => setMasterOpen(!masterOpen)}
+          >
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
+              Master Data
+            </p>
+            {masterOpen ? (
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground" />
+            )}
+          </div>
+          {masterOpen && (
+            <nav className="flex flex-col gap-1">
+              {masterDataItems.map((item) => (
+                <Button
+                  key={item.href}
+                  variant={isActive(item.href) ? "secondary" : "ghost"}
+                  className={cn(
+                    "w-full justify-start gap-3",
+                    isActive(item.href) && "font-medium"
+                  )}
+                  asChild
+                  onClick={onNavClick}
+                >
+                  <Link to={item.href}>
+                    <item.icon className="h-4 w-4" />
+                    {item.label}
+                  </Link>
+                </Button>
+              ))}
+            </nav>
+          )}
         </div>
 
         {/* Admin section */}
         <div className="mt-4">
-          <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-            Admin
-          </p>
-          <nav className="flex flex-col gap-1">
-            {adminItems.map((item) => (
-              <Button
-                key={item.href}
-                variant={isActive(item.href) ? "secondary" : "ghost"}
-                className={cn(
-                  "w-full justify-start gap-3",
-                  isActive(item.href) && "font-medium"
-                )}
-                asChild
-                onClick={onNavClick}
-              >
-                <Link to={item.href}>
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              </Button>
-            ))}
-          </nav>
+          <div 
+            className="flex items-center justify-between mb-1 px-3 py-1 cursor-pointer group"
+            onClick={() => setAdminOpen(!adminOpen)}
+          >
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
+              Admin
+            </p>
+            {adminOpen ? (
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground" />
+            )}
+          </div>
+          {adminOpen && (
+            <nav className="flex flex-col gap-1">
+              {adminItems.map((item) => (
+                <Button
+                  key={item.href}
+                  variant={isActive(item.href) ? "secondary" : "ghost"}
+                  className={cn(
+                    "w-full justify-start gap-3",
+                    isActive(item.href) && "font-medium"
+                  )}
+                  asChild
+                  onClick={onNavClick}
+                >
+                  <Link to={item.href}>
+                    <item.icon className="h-4 w-4" />
+                    {item.label}
+                  </Link>
+                </Button>
+              ))}
+            </nav>
+          )}
         </div>
       </ScrollArea>
 
       {/* Footer */}
-      <div className="border-t p-4 space-y-2">
+      <div className="border-t p-4 space-y-2 shrink-0">
         {user && (
           <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-3 py-2 mb-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 shrink-0">
               <User className="h-4 w-4 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
