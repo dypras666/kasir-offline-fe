@@ -11,6 +11,12 @@ import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { RefreshCw, Plus, Loader2 } from "lucide-react"
 
+const nowLocal = () => {
+  const d = new Date()
+  const offset = d.getTimezoneOffset() * 60000
+  return new Date(d.getTime() - offset).toISOString().slice(0, 16)
+}
+
 interface StokOpname {
   id: number
   kode_so: string
@@ -41,7 +47,7 @@ export function StokOpnamePage() {
 
   const [formData, setFormData] = useState({
     kode_so: `SO-${Date.now()}`,
-    tanggal: new Date().toISOString().split('T')[0],
+    tanggal: nowLocal(),
     warehouse_id: "",
     keterangan: "",
     items: [] as ItemRow[]
@@ -86,7 +92,7 @@ export function StokOpnamePage() {
       fetchData()
       setFormData({
         kode_so: `SO-${Date.now()}`,
-        tanggal: new Date().toISOString().split('T')[0],
+        tanggal: nowLocal(),
         warehouse_id: "",
         keterangan: "",
         items: []
@@ -141,7 +147,7 @@ export function StokOpnamePage() {
                 <TableRow key={item.id}>
                   <TableCell className="text-xs font-mono text-muted-foreground">{idx + 1}</TableCell>
                   <TableCell className="font-mono text-xs font-semibold">{item.kode_so}</TableCell>
-                  <TableCell>{item.tanggal}</TableCell>
+                  <TableCell>{new Date(item.tanggal).toLocaleString("id-ID", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</TableCell>
                   <TableCell className="font-medium">{item.warehouse?.name}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{item.keterangan || "-"}</TableCell>
                   <TableCell>
@@ -172,7 +178,7 @@ export function StokOpnamePage() {
             </div>
             <div className="space-y-2">
               <Label>Tanggal</Label>
-              <Input type="date" value={formData.tanggal} onChange={e => setFormData({...formData, tanggal: e.target.value})} />
+              <Input type="datetime-local" value={formData.tanggal} onChange={e => setFormData({...formData, tanggal: e.target.value})} />
             </div>
             <div className="space-y-2">
               <Label>Gudang</Label>

@@ -71,7 +71,10 @@ export function StokOpnameDetailPage() {
     try {
       const date = new Date(dateStr)
       if (isNaN(date.getTime())) return dateStr
-      return date.toLocaleDateString("id-ID", { year: "numeric", month: "long", day: "numeric" })
+      return date.toLocaleString("id-ID", {
+        year: "numeric", month: "short", day: "numeric",
+        hour: "2-digit", minute: "2-digit"
+      })
     } catch {
       return dateStr
     }
