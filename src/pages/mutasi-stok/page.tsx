@@ -11,6 +11,13 @@ import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { ArrowLeftRight, Plus, Loader2, Search, Trash2 } from "lucide-react"
 
+interface MultiUnit {
+  id: number
+  unit_name: string
+  conversion: number
+  qty: number
+}
+
 interface TransferItem {
   product_id: number
   unit_id: number | null
@@ -18,6 +25,8 @@ interface TransferItem {
   product_name?: string
   sku?: string
   stock_available?: number
+  multi_unit?: MultiUnit[]
+  base_unit_name?: string
 }
 
 interface StockTransfer {
@@ -28,7 +37,7 @@ interface StockTransfer {
   to_warehouse: { id: number; name: string } | null
   from_branch?: { id: number; name: string } | null
   to_branch?: { id: number; name: string } | null
-  items: TransferItem[]
+  items: any[]
 }
 
 interface SourceProduct {
@@ -36,6 +45,8 @@ interface SourceProduct {
   name: string
   sku: string
   stock: number
+  multi_unit: MultiUnit[]
+  unit_name: string
 }
 
 export function MutasiStokPage() {
@@ -87,6 +98,8 @@ export function MutasiStokPage() {
         name: p.name,
         sku: p.sku,
         stock: p.stock,
+        multi_unit: p.multi_unit || [],
+        unit_name: p.unit_name
       }))
       setSourceProducts(list)
     } catch (err) { console.error(err) }
@@ -102,7 +115,19 @@ export function MutasiStokPage() {
     if (form.items.some(i => i.product_id === product.id)) return
     setForm({
       ...form,
-      items: [...form.items, { product_id: product.id, unit_id: null, qty: 1, product_name: product.name, sku: product.sku, stock_available: product.stock }]
+      items: [
+        ...form.items,
+        {
+          product_id: product.id,
+          unit_id: null,
+          qty: 1,
+          product_name: product.name,
+          sku: product.sku,
+          stock_available: product.stock,
+          base_unit_name: product.unit_name,
+          multi_unit: product.multi_unit
+        }
+      ]
     })
     setSearchProd("")
   }
@@ -117,6 +142,19 @@ export function MutasiStokPage() {
     setForm({ ...form, items })
   }
 
+  const updateUnit = (idx: number, unitId: string) => {
+    const items = [...form.items]
+    items[idx].unit_id = unitId ? parseInt(unitId) : null
+    setForm({ ...form, items })
+  }
+
+  const getStockForUnit = (item: TransferItem) => {
+    if (!item.unit_id) return item.stock_available || 0
+    const unit = item.multi_unit?.find(u => u.id === item.unit_id)
+    if (!unit) return 0
+    return unit.qty // Ini sudah dihitung di backend (total_stock / conversion)
+  }
+
   const handleSave = async () => {
     if (!form.from_loc || !form.to_loc) return alert("Pilih lokasi asal & tujuan!")
     if (form.from_loc === form.to_loc && form.from_loc_type === form.to_loc_type)
@@ -124,14 +162,15 @@ export function MutasiStokPage() {
 
     // Validasi stok
     for (const item of form.items) {
-      if (item.qty > (item.stock_available || 0)) {
-        return alert(`Stok ${item.product_name} tidak mencukupi! Tersedia: ${item.stock_available}, diminta: ${item.qty}`)
+      const avail = getStockForUnit(item)
+      if (item.qty > avail) {
+        return alert(`Stok ${item.product_name} tidak mencukupi! Tersedia: ${avail}, diminta: ${item.qty}`)
       }
     }
 
     const payload: any = {
       transfer_date: form.transfer_date,
-      items: form.items.map(({ stock_available, ...rest }) => rest),
+      items: form.items.map(({ stock_available, multi_unit, base_unit_name, product_name, sku, ...rest }) => rest),
     }
 
     if (form.from_loc_type === "warehouse") {
@@ -235,7 +274,7 @@ export function MutasiStokPage() {
 
       {/* Dialog Buat Transfer */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Buat Transfer Stok</DialogTitle></DialogHeader>
           <div className="grid grid-cols-3 gap-4 py-4">
             <div className="space-y-2">
@@ -308,7 +347,7 @@ export function MutasiStokPage() {
                 {loadingProducts && <Loader2 className="h-4 w-4 animate-spin" />}
               </div>
               {form.from_loc_type && searchProd && !loadingProducts && (
-                <div className="max-h-32 overflow-y-auto border-t mt-1 pt-1">
+                <div className="max-h-48 overflow-y-auto border-t mt-1 pt-1">
                   {filteredProducts.length === 0 ? (
                     <div className="text-xs text-muted-foreground px-1 py-2">Tidak ada produk dengan stok tersedia</div>
                   ) : filteredProducts.slice(0, 10).map((p: any) => (
@@ -318,7 +357,7 @@ export function MutasiStokPage() {
                         <span className="text-muted-foreground ml-2 font-mono text-xs">{p.sku}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono text-emerald-600 font-semibold">Stok: {p.stock}</span>
+                        <span className="text-xs font-mono text-emerald-600 font-semibold">Stok: {p.stock} {p.unit_name}</span>
                         <Plus className="h-3 w-3 text-muted-foreground" />
                       </div>
                     </div>
@@ -332,6 +371,7 @@ export function MutasiStokPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Produk</TableHead>
+                  <TableHead className="w-40">Satuan</TableHead>
                   <TableHead className="w-16 text-center">Stok</TableHead>
                   <TableHead className="w-24 text-center">Transfer</TableHead>
                   <TableHead className="w-10"></TableHead>
@@ -339,33 +379,48 @@ export function MutasiStokPage() {
               </TableHeader>
               <TableBody>
                 {form.items.length === 0 ? (
-                  <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Pilih lokasi asal & cari produk di atas</TableCell></TableRow>
-                ) : form.items.map((item, idx) => (
-                  <TableRow key={`${item.product_id}-${idx}`}>
-                    <TableCell>
-                      <div className="font-medium">{item.product_name}</div>
-                      <div className="text-xs text-muted-foreground font-mono">{item.sku}</div>
-                    </TableCell>
-                    <TableCell className="text-center font-mono text-sm font-semibold text-emerald-600">
-                      {item.stock_available}
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        min={1}
-                        max={item.stock_available}
-                        className={`h-8 text-center ${item.qty > (item.stock_available || 0) ? 'border-red-500 text-red-500' : ''}`}
-                        value={item.qty}
-                        onChange={e => updateQty(idx, parseInt(e.target.value) || 1)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => removeItem(idx)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                  <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Pilih lokasi asal & cari produk di atas</TableCell></TableRow>
+                ) : form.items.map((item, idx) => {
+                  const avail = getStockForUnit(item)
+                  return (
+                    <TableRow key={`${item.product_id}-${idx}`}>
+                      <TableCell>
+                        <div className="font-medium">{item.product_name}</div>
+                        <div className="text-xs text-muted-foreground font-mono">{item.sku}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          className="h-8 text-xs"
+                          value={item.unit_id?.toString() || ""}
+                          onChange={e => updateUnit(idx, e.target.value)}
+                        >
+                          <option value="">{item.base_unit_name} (Dasar)</option>
+                          {item.multi_unit?.map(u => (
+                            <option key={u.id} value={u.id}>{u.unit_name} (1:{u.conversion})</option>
+                          ))}
+                        </Select>
+                      </TableCell>
+                      <TableCell className="text-center font-mono text-sm font-semibold text-emerald-600">
+                        {avail}
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          min={1}
+                          max={avail}
+                          className={`h-8 text-center ${item.qty > avail ? 'border-red-500 text-red-500' : ''}`}
+                          value={item.qty}
+                          onChange={e => updateQty(idx, parseInt(e.target.value) || 1)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => removeItem(idx)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           </div>
