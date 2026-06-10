@@ -72,16 +72,15 @@ export function MultiSatuanPage() {
     fetchData()
   }, [])
 
-  // Tampilkan hanya produk yang sudah punya multi-satuan
-  // Filter pencarian tetap jalan di dalamnya
+  // Tampilkan SEMUA produk — yang sudah punya multi-satuan maupun belum
+  // Filter pencarian jalan di atasnya
   const filtered = products.filter((p) => {
-    if (!p.units || p.units.length === 0) return false
     const q = search.toLowerCase()
     if (!q) return true
     return (
       p.name.toLowerCase().includes(q) ||
       p.sku.toLowerCase().includes(q) ||
-      p.units.some((u) => u.name.toLowerCase().includes(q))
+      (p.units && p.units.some((u) => u.name.toLowerCase().includes(q)))
     )
   })
 
