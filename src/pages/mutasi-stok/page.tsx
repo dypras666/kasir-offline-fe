@@ -224,10 +224,14 @@ export function MutasiStokPage() {
               >
                 <option value="">-- Pilih Asal --</option>
                 <optgroup label="🏭 Gudang">
-                  {warehouses.map(wh => <option key={`warehouse_${wh.id}`} value={`warehouse_${wh.id}`}>{wh.name}</option>)}
+                  {warehouses
+                    .filter(wh => !(form.to_loc_type === "warehouse" && form.to_loc === String(wh.id)))
+                    .map(wh => <option key={`warehouse_${wh.id}`} value={`warehouse_${wh.id}`}>{wh.name}</option>)}
                 </optgroup>
                 <optgroup label="🏪 Cabang">
-                  {branches.map(br => <option key={`branch_${br.id}`} value={`branch_${br.id}`}>{br.name}</option>)}
+                  {branches
+                    .filter(br => !(form.to_loc_type === "branch" && form.to_loc === String(br.id)))
+                    .map(br => <option key={`branch_${br.id}`} value={`branch_${br.id}`}>{br.name}</option>)}
                 </optgroup>
               </Select>
             </div>
@@ -244,10 +248,14 @@ export function MutasiStokPage() {
               >
                 <option value="">-- Pilih Tujuan --</option>
                 <optgroup label="🏭 Gudang">
-                  {warehouses.map(wh => <option key={`warehouse_${wh.id}`} value={`warehouse_${wh.id}`}>{wh.name}</option>)}
+                  {warehouses
+                    .filter(wh => !(form.from_loc_type === "warehouse" && form.from_loc === String(wh.id)))
+                    .map(wh => <option key={`warehouse_${wh.id}`} value={`warehouse_${wh.id}`}>{wh.name}</option>)}
                 </optgroup>
                 <optgroup label="🏪 Cabang">
-                  {branches.map(br => <option key={`branch_${br.id}`} value={`branch_${br.id}`}>{br.name}</option>)}
+                  {branches
+                    .filter(br => !(form.from_loc_type === "branch" && form.from_loc === String(br.id)))
+                    .map(br => <option key={`branch_${br.id}`} value={`branch_${br.id}`}>{br.name}</option>)}
                 </optgroup>
               </Select>
             </div>
