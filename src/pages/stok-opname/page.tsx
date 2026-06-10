@@ -45,13 +45,13 @@ export function StokOpnamePage() {
   const [open, setOpen] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  const [warehouses, setWarehouses] = useState<any[]>([])
+  const [locations, setLocations] = useState<any[]>([])
   const [fetchingProducts, setFetchingProducts] = useState(false)
 
   const [formData, setFormData] = useState({
     kode_so: `SO-${Date.now()}`,
     tanggal: nowLocal(),
-    warehouse_id: "",
+    location_id: "",
     keterangan: "",
     items: [] as ItemRow[]
   })
@@ -61,18 +61,23 @@ export function StokOpnamePage() {
       const res: any = await api.get("/stok-opnames")
       setData(res.data ?? res)
       const resWh: any = await api.get("/warehouses")
-      setWarehouses(resWh.data ?? resWh)
+      const resBr: any = await api.get("/branches")
+      const whList = (resWh.data ?? resWh).map((w: any) => ({ ...w, type: 'warehouse', select_id: `warehouse_${w.id}` }))
+      const brList = (resBr.data ?? resBr).map((b: any) => ({ ...b, type: 'branch', select_id: `branch_${b.id}` }))
+      setLocations([...whList, ...brList])
     } catch (err) { console.error(err) }
     finally { setLoading(false) }
   }
 
   useEffect(() => { fetchData() }, [])
 
-  const loadProducts = async (whId: string) => {
-    if (!whId) return
+  const loadProducts = async (locationId: string) => {
+    if (!locationId) return
     setFetchingProducts(true)
+    const [type, id] = locationId.split("_")
+    const param = type === 'warehouse' ? `warehouse_id=${id}` : `branch_id=${id}`
     try {
-      const res: any = await api.get(`/stock-report?warehouse_id=${whId}&per_page=100`)
+      const res: any = await api.get(`/stock-report?${param}&per_page=100`)
       const list: ItemRow[] = (res.data ?? res).map((p: any) => ({
         product_id: p.id,
         product_name: p.name,
@@ -92,16 +97,22 @@ export function StokOpnamePage() {
   }
 
   const handleSave = async () => {
-    if (!formData.warehouse_id) return alert("Pilih gudang!")
+    if (!formData.location_id) return alert("Pilih lokasi!")
     setSaving(true)
+    const [type, id] = formData.location_id.split("_")
+    const payload = {
+      ...formData,
+      warehouse_id: type === 'warehouse' ? id : null,
+      branch_id: type === 'branch' ? id : null
+    }
     try {
-      await api.post("/stok-opnames", formData)
+      await api.post("/stok-opnames", payload)
       setOpen(false)
       fetchData()
       setFormData({
         kode_so: `SO-${Date.now()}`,
         tanggal: nowLocal(),
-        warehouse_id: "",
+        location_id: "",
         keterangan: "",
         items: []
       })
@@ -137,7 +148,7 @@ export function StokOpnamePage() {
                 <TableHead className="w-10">#</TableHead>
                 <TableHead>Ref No.</TableHead>
                 <TableHead>Tanggal</TableHead>
-                <TableHead>Gudang</TableHead>
+                <TableHead>Lokasi</TableHead>
                 <TableHead>Catatan</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
@@ -156,7 +167,7 @@ export function StokOpnamePage() {
                   <TableCell className="text-xs font-mono text-muted-foreground">{idx + 1}</TableCell>
                   <TableCell className="font-mono text-xs font-semibold">{item.kode_so}</TableCell>
                   <TableCell>{new Date(item.tanggal).toLocaleString("id-ID", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</TableCell>
-                  <TableCell className="font-medium">{item.warehouse?.name}</TableCell>
+                  <TableCell className="font-medium">{item.warehouse?.name || (item as any).branch?.name}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{item.keterangan || "-"}</TableCell>
                   <TableCell>
                     {item.status === 'completed' ?
@@ -189,14 +200,19 @@ export function StokOpnamePage() {
               <Input type="datetime-local" value={formData.tanggal} onChange={e => setFormData({...formData, tanggal: e.target.value})} />
             </div>
             <div className="space-y-2">
-              <Label>Gudang</Label>
-              <Select value={formData.warehouse_id} onChange={e => {
+              <Label>Lokasi (Gudang/Cabang)</Label>
+              <Select value={formData.location_id} onChange={e => {
                 const val = e.target.value
-                setFormData({...formData, warehouse_id: val})
+                setFormData({...formData, location_id: val})
                 loadProducts(val)
               }}>
-                <option value="">-- Pilih Gudang --</option>
-                {warehouses.map(wh => <option key={wh.id} value={wh.id}>{wh.name}</option>)}
+                <option value="">-- Pilih Lokasi --</option>
+                <optgroup label="🏭 Gudang">
+                  {locations.filter(l => l.type === 'warehouse').map(l => <option key={l.select_id} value={l.select_id}>{l.name}</option>)}
+                </optgroup>
+                <optgroup label="🏪 Cabang">
+                  {locations.filter(l => l.type === 'branch').map(l => <option key={l.select_id} value={l.select_id}>{l.name}</option>)}
+                </optgroup>
               </Select>
             </div>
             <div className="space-y-2">
@@ -220,7 +236,7 @@ export function StokOpnamePage() {
                   <TableRow><TableCell colSpan={4} className="text-center py-8"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></TableCell></TableRow>
                 ) : formData.items.length === 0 ? (
                   <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
-                    Pilih gudang untuk memuat produk
+                    Pilih lokasi untuk memuat produk
                   </TableCell></TableRow>
                 ) : formData.items.map((item, idx) => (
                   <TableRow key={item.product_id}>
