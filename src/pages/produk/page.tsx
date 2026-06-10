@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Package, Plus, Pencil, Trash2, ChevronDown, ChevronRight, Building2, Warehouse, Copy, DollarSign, Layers } from "lucide-react"
 import { toast } from "sonner"
+import { formatMultiSatuan } from "@/lib/multi-unit"
 
 interface UnitBranchPrice {
   branch_id: number
@@ -835,7 +836,7 @@ export function ProdukPage() {
                         : (<span className="italic">—</span>)
                       }
                     </TableCell>
-                    <TableCell>{item.stock}</TableCell>
+                    <TableCell className="font-mono text-xs">{formatMultiSatuan(item.stock, item.units, "Pcs")}</TableCell>
                     <TableCell>Rp {Number(item.price).toLocaleString()}</TableCell>
                     {branches.map(b => {
                       const bp = item.prices?.find(p => p.branch_id === b.id)
@@ -860,8 +861,8 @@ export function ProdukPage() {
                     {branches.map(b => {
                       const bs = item.stocks?.find(s => s.branch_id === b.id)
                       return (
-                        <TableCell key={`sb-${b.id}`} className="text-xs text-center">
-                          {bs ? Number(bs.stock).toLocaleString() : (
+                        <TableCell key={`sb-${b.id}`} className="text-xs text-center font-mono">
+                          {bs ? formatMultiSatuan(Number(bs.stock), item.units, "Pcs") : (
                             <span className="text-muted-foreground italic">—</span>
                           )}
                         </TableCell>
@@ -870,8 +871,8 @@ export function ProdukPage() {
                     {warehouses.map(w => {
                       const ws = item.stocks?.find(s => s.warehouse_id === w.id)
                       return (
-                        <TableCell key={`sw-${w.id}`} className="text-xs text-center">
-                          {ws ? Number(ws.stock).toLocaleString() : (
+                        <TableCell key={`sw-${w.id}`} className="text-xs text-center font-mono">
+                          {ws ? formatMultiSatuan(Number(ws.stock), item.units, "Pcs") : (
                             <span className="text-muted-foreground italic">—</span>
                           )}
                         </TableCell>

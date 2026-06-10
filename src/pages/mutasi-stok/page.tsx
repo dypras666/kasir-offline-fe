@@ -364,7 +364,7 @@ export function MutasiStokPage() {
                         <span className="text-muted-foreground ml-2 font-mono text-xs">{p.sku}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono text-emerald-600 font-semibold">Stok: {p.stock} {p.unit_name}</span>
+                        <span className="text-xs font-mono text-emerald-600 font-semibold">{formatMultiSatuan(p.stock, p.multi_unit, p.unit_name || "Pcs")}</span>
                         <Plus className="h-3 w-3 text-muted-foreground" />
                       </div>
                     </div>

@@ -21,6 +21,7 @@ import {
   PlusCircle,
 } from "lucide-react"
 import { api } from "@/lib/api"
+import { formatMultiSatuan } from "@/lib/multi-unit"
 
 // Backend shape
 interface DashboardJson {
@@ -51,6 +52,8 @@ interface DashboardJson {
     name: string
     sku: string
     stock: number
+    multi_unit?: Array<{ name: string; conversion: number }>
+    unit_name?: string
   }>
 }
 
@@ -220,8 +223,8 @@ export function DashboardPage() {
                       <span className="text-sm font-medium">{p.name}</span>
                       <span className="text-[10px] text-muted-foreground">{p.sku}</span>
                     </div>
-                    <Badge variant={p.stock === 0 ? "destructive" : "outline"} className="text-[10px]">
-                      {p.stock}
+                    <Badge variant={p.stock <= 0 ? "destructive" : "outline"} className="text-[10px] font-mono">
+                      {formatMultiSatuan(p.stock, p.multi_unit, p.unit_name || "Pcs")}
                     </Badge>
                   </div>
                 ))}
