@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Search, SlidersHorizontal, ChevronDown, ChevronRight, Package, Store, Warehouse, TrendingUp, TrendingDown, DollarSign } from "lucide-react"
 import { useShowFilters } from "@/hooks/useShowFilters"
+import { formatMultiSatuan } from "@/lib/multi-unit"
 
 interface Supplier {
   id: number
@@ -449,18 +450,11 @@ export function StokPage() {
                         {item.multi_unit.length > 0 && (
                           <div>
                             <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-2 flex items-center gap-1.5">
-                              <Package className="h-3 w-3" /> Multi Satuan (Konversi)
+                              <Package className="h-3 w-3" /> Multi Satuan
                             </p>
-                            <div className="flex flex-wrap gap-2">
-                              {item.multi_unit.map((mu, i) => (
-                                <Badge key={i} variant="outline" className="text-xs gap-1">
-                                  {mu.unit_name}: <span className="font-semibold">{mu.qty.toLocaleString("id-ID")}</span>
-                                  {mu.price > 0 && (
-                                    <> @ {formatRp(mu.price)}</>
-                                  )}
-                                </Badge>
-                              ))}
-                            </div>
+                            <p className="text-sm font-semibold">
+                              {formatMultiSatuan(item.stock, item.multi_unit, item.unit_name)}
+                            </p>
                           </div>
                         )}
 

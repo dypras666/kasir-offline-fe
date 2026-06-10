@@ -1,5 +1,6 @@
 export interface UnitInfo {
-  name: string
+  name?: string
+  unit_name?: string
   conversion: number
 }
 
@@ -32,19 +33,22 @@ export function formatMultiSatuan(
     if (u.conversion <= 0) continue
     const count = Math.floor(remaining / u.conversion)
     if (count > 0) {
-      parts.push(`${count} ${u.name}`)
+      const uName = u.name || u.unit_name || defaultUnitName
+      parts.push(`${count} ${uName}`)
       remaining -= count * u.conversion
     }
   }
 
   if (remaining > 0) {
     const smallest = sorted[sorted.length - 1]
-    parts.push(`${remaining} ${smallest.name}`)
+    const smallestName = smallest.name || smallest.unit_name || defaultUnitName
+    parts.push(`${remaining} ${smallestName}`)
   }
 
   // If all zero, show 0 with smallest unit
   if (parts.length === 0) {
-    return `0 ${sorted[sorted.length - 1]?.name || defaultUnitName}`
+    const smallest = sorted[sorted.length - 1]
+    return `0 ${smallest?.name || smallest?.unit_name || defaultUnitName}`
   }
 
   return parts.join(", ")
