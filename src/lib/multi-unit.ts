@@ -41,7 +41,11 @@ export function formatMultiSatuan(
 
   if (remaining > 0) {
     const smallest = sorted[sorted.length - 1]
-    const smallestName = smallest.name || smallest.unit_name || defaultUnitName
+    // If the smallest known unit is NOT the base unit (conversion > 1),
+    // fall back to defaultUnitName so e.g. "2 Pcs" appears instead of "2 Dos"
+    const smallestName = (smallest.conversion <= 1)
+      ? (smallest.name || smallest.unit_name || defaultUnitName)
+      : defaultUnitName
     parts.push(`${remaining} ${smallestName}`)
   }
 
