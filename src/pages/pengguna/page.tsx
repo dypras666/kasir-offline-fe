@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { userApi, type UserData, type RoleData } from "@/lib/api"
 import { Plus, Pencil, Trash2, Loader2, Search, Users, Shield } from "lucide-react"
+import { toast } from "sonner"
 
 export function PenggunaPage() {
   const [users, setUsers] = useState<UserData[]>([])
@@ -61,7 +62,7 @@ export function PenggunaPage() {
 
   const handleSave = async () => {
     if (!formRole) {
-      alert("Pilih role terlebih dahulu")
+      toast.error("Pilih role terlebih dahulu")
       return
     }
     setSaving(true)

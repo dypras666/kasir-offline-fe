@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { ArrowLeftRight, Plus, Loader2, Search, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 
 interface MultiUnit {
   id: number
@@ -156,15 +157,15 @@ export function MutasiStokPage() {
   }
 
   const handleSave = async () => {
-    if (!form.from_loc || !form.to_loc) return alert("Pilih lokasi asal & tujuan!")
+    if (!form.from_loc || !form.to_loc) return toast.error("Pilih lokasi asal & tujuan!")
     if (form.from_loc === form.to_loc && form.from_loc_type === form.to_loc_type)
-      return alert("Lokasi asal & tujuan harus berbeda!")
+      return toast("Lokasi asal & tujuan harus berbeda!")
 
     // Validasi stok
     for (const item of form.items) {
       const avail = getStockForUnit(item)
       if (item.qty > avail) {
-        return alert(`Stok ${item.product_name} tidak mencukupi! Tersedia: ${avail}, diminta: ${item.qty}`)
+        return toast.error(`Stok ${item.product_name} tidak mencukupi! Tersedia: ${avail}, diminta: ${item.qty}`)
       }
     }
 
@@ -201,7 +202,7 @@ export function MutasiStokPage() {
       })
       setSourceProducts([])
       fetchData()
-    } catch (err: any) { alert(err?.message || err) }
+    } catch (err: any) { toast(err?.message || err) }
     finally { setSaving(false) }
   }
 

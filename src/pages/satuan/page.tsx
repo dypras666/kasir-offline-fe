@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Plus, Pencil, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 
 interface Unit {
   id: number
@@ -45,7 +46,7 @@ export function SatuanPage() {
       setName("")
       fetchData()
     } catch {
-      alert("Gagal menyimpan data")
+      toast.error("Gagal menyimpan data")
     }
   }
 
@@ -61,7 +62,7 @@ export function SatuanPage() {
       await api.delete(`/units/${id}`)
       fetchData()
     } catch {
-      alert("Gagal menghapus")
+      toast.error("Gagal menghapus")
     }
   }
 

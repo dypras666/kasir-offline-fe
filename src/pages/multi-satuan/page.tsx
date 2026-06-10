@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Plus, Pencil, Layers, Search, ChevronDown, ChevronRight, Package } from "lucide-react"
 import { useShowFilters } from "@/hooks/useShowFilters"
 import { SlidersHorizontal } from "lucide-react"
+import { toast } from "sonner"
 
 interface ProductUnit {
   id: number
@@ -163,7 +164,7 @@ export function MultiSatuanPage() {
       setEditing(null)
       fetchData()
     } catch {
-      alert("Gagal menyimpan")
+      toast.error("Gagal menyimpan")
     }
   }
 

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Loader2, ArrowLeft, CheckCircle, XCircle, ArrowLeftRight, Package } from "lucide-react"
+import { toast } from "sonner"
 
 interface TransferItem {
   id: number
@@ -48,7 +49,7 @@ export function MutasiStokDetailPage() {
     try {
       await api.post(`/stock-transfers/${id}/complete`)
       fetchData()
-    } catch (err: any) { alert(err?.message || err) }
+    } catch (err: any) { toast(err?.message || err) }
     finally { setActing(false) }
   }
 
@@ -58,7 +59,7 @@ export function MutasiStokDetailPage() {
     try {
       await api.post(`/stock-transfers/${id}/cancel`)
       fetchData()
-    } catch (err: any) { alert(err?.message || err) }
+    } catch (err: any) { toast(err?.message || err) }
     finally { setActing(false) }
   }
 

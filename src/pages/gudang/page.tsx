@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Pencil, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 
 interface Warehouse {
   id: number
@@ -41,7 +42,7 @@ export function GudangPage() {
       else await api.post("/warehouses", form)
       setOpen(false); setEditing(null); setForm({ name: "", address: "", pic: "", phone: "", is_pusat: false })
       fetchData()
-    } catch { alert("Gagal menyimpan") }
+    } catch { toast.error("Gagal menyimpan") }
   }
 
   const handleEdit = (item: Warehouse) => {
@@ -50,7 +51,7 @@ export function GudangPage() {
 
   const handleDelete = async (id: number) => {
     if (!confirm("Hapus gudang?")) return
-    try { await api.delete(`/warehouses/${id}`); fetchData() } catch { alert("Gagal menghapus") }
+    try { await api.delete(`/warehouses/${id}`); fetchData() } catch { toast.error("Gagal menghapus") }
   }
 
   return (

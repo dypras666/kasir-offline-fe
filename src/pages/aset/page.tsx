@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { api } from "@/lib/api"
 import { Loader2, Search, Building2, RefreshCw, Clock, DollarSign, Package, FileText, Pencil } from "lucide-react"
+import { toast } from "sonner"
 
 interface AssetItem {
   id: number
@@ -61,7 +62,7 @@ export function AsetPage() {
     setDepreciating(true)
     try {
       const res = await api.post<{ message: string }>("/run-depreciation", { date: deprecDate })
-      alert(res.message)
+      toast(res.message)
       loadData()
     } catch (err) {
       console.error(err)

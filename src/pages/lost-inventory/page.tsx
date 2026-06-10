@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { AlertTriangle, Plus } from "lucide-react"
+import { toast } from "sonner"
 
 interface LostInventory {
   id: number
@@ -36,7 +37,7 @@ export function LostInventoryPage() {
           <h1 className="text-3xl font-bold tracking-tight">Lost Inventory</h1>
           <p className="text-sm text-muted-foreground">Pencatatan barang hilang, rusak, atau kadaluarsa</p>
         </div>
-        <Button variant="destructive" onClick={() => alert("Form Lost Inventory Sedang Dibangun")}>
+        <Button variant="destructive" onClick={() => toast("Form Lost Inventory Sedang Dibangun")}>
           <Plus className="mr-2 h-4 w-4" /> Lapor Barang Hilang
         </Button>
       </div>

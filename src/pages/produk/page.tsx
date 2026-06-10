@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Package, Plus, Pencil, Trash2, ChevronDown, ChevronRight, Building2, Warehouse, Copy, DollarSign, Layers } from "lucide-react"
+import { toast } from "sonner"
 
 interface UnitBranchPrice {
   branch_id: number
@@ -245,7 +246,7 @@ export function ProdukPage() {
         prices: [...existing, ...branches.map(b => ({ branch_id: b.id, price: formData.price }))]
       })
     } else {
-      alert("Isi Harga Default dulu")
+      toast.error("Isi Harga Default dulu")
     }
   }
 
@@ -257,7 +258,7 @@ export function ProdukPage() {
         prices: [...existing, ...warehouses.map(w => ({ warehouse_id: w.id, price: formData.price }))]
       })
     } else {
-      alert("Isi Harga Default dulu")
+      toast.error("Isi Harga Default dulu")
     }
   }
 
@@ -306,7 +307,7 @@ export function ProdukPage() {
       setFormData({ name: "", sku: "", price: 0, stock: 0, barcode: "", unit_id: undefined, units: [], prices: [], stocks: [] })
       fetchData()
     } catch {
-      alert("Gagal menyimpan data")
+      toast.error("Gagal menyimpan data")
     }
   }
 
@@ -336,7 +337,7 @@ export function ProdukPage() {
       await api.delete(`/products/${id}`)
       fetchData()
     } catch {
-      alert("Gagal menghapus")
+      toast.error("Gagal menghapus")
     }
   }
 

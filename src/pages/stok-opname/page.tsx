@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { RefreshCw, Plus, Loader2 } from "lucide-react"
 import { formatMultiSatuan } from "@/lib/multi-unit"
+import { toast } from "sonner"
 
 const nowLocal = () => {
   const d = new Date()
@@ -97,7 +98,7 @@ export function StokOpnamePage() {
   }
 
   const handleSave = async () => {
-    if (!formData.location_id) return alert("Pilih lokasi!")
+    if (!formData.location_id) return toast.error("Pilih lokasi!")
     setSaving(true)
     const [type, id] = formData.location_id.split("_")
     const payload = {

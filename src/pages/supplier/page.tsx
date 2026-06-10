@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Plus, Pencil, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 
 interface Supplier {
   id: number
@@ -38,7 +39,7 @@ export function SupplierPage() {
       else await api.post("/suppliers", form)
       setOpen(false); setEditing(null); setForm({ name: "", email: "", phone: "" })
       fetchData()
-    } catch { alert("Gagal menyimpan") }
+    } catch { toast.error("Gagal menyimpan") }
   }
 
   const handleEdit = (item: Supplier) => {
@@ -47,7 +48,7 @@ export function SupplierPage() {
 
   const handleDelete = async (id: number) => {
     if (!confirm("Hapus supplier?")) return
-    try { await api.delete(`/suppliers/${id}`); fetchData() } catch { alert("Gagal menghapus") }
+    try { await api.delete(`/suppliers/${id}`); fetchData() } catch { toast.error("Gagal menghapus") }
   }
 
   return (
