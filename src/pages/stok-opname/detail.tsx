@@ -237,7 +237,7 @@ export function StokOpnameDetailPage() {
                   <TableCell className="font-mono text-xs">{item.product?.sku ?? "-"}</TableCell>
                   <TableCell className="font-medium">{item.product?.name ?? "Produk #" + item.product_id}</TableCell>
                   <TableCell className="text-center">
-                    <div className="font-mono">{fmt(Number(item.stok_sistem))}</div>
+                    <div className="font-mono">{item.stok_sistem}</div>
                     {item.product?.units && item.product.units.length > 0 && (
                       <div className="text-[10px] text-blue-600 font-medium">
                         {formatMultiSatuan(
@@ -249,7 +249,7 @@ export function StokOpnameDetailPage() {
                     )}
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="font-mono">{fmt(Number(item.stok_fisik))}</div>
+                    <div className="font-mono">{item.stok_fisik}</div>
                     {item.product?.units && item.product.units.length > 0 && (
                       <div className="text-[10px] text-blue-600 font-medium">
                         {formatMultiSatuan(

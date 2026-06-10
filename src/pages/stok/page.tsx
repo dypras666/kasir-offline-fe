@@ -350,7 +350,7 @@ export function StokPage() {
                           {/* Mobile Stock & Chevron (Only visible on mobile) */}
                           <div className="flex sm:hidden flex-col items-end shrink-0 pt-0.5">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-sm font-bold text-primary">{item.stock.toLocaleString("id-ID")}</span>
+                              <span className="text-sm font-bold text-primary">{formatMultiSatuan(item.stock, item.multi_unit, item.unit_name)}</span>
                               {isExpanded ? (
                                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
                               ) : (
@@ -389,7 +389,7 @@ export function StokPage() {
                       
                       {/* Qty (Col 7-8) */}
                       <div className="hidden sm:block col-span-2 text-right px-2">
-                        <p className="text-sm font-bold text-foreground">{item.stock.toLocaleString("id-ID")}</p>
+                        <p className="text-sm font-bold text-foreground">{formatMultiSatuan(item.stock, item.multi_unit, item.unit_name)}</p>
                         <p className="text-[10px] text-muted-foreground uppercase">{item.unit_name}</p>
                       </div>
 
@@ -468,7 +468,7 @@ export function StokPage() {
                               {item.stock_per_loc.map((loc, i) => (
                                 <Badge key={i} variant="outline" className="text-xs gap-1">
                                   {loc.branch_id ? <Store className="h-3 w-3" /> : <Warehouse className="h-3 w-3" />}
-                                  <span className="font-semibold">{loc.stock.toLocaleString("id-ID")}</span> {item.unit_name}
+                                  <span className="font-semibold">{formatMultiSatuan(loc.stock, item.multi_unit, item.unit_name)}</span> {item.unit_name}
                                 </Badge>
                               ))}
                             </div>
