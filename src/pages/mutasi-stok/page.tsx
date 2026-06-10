@@ -164,8 +164,12 @@ export function MutasiStokPage() {
     // Validasi stok
     for (const item of form.items) {
       const avail = getStockForUnit(item)
+      const unitName = item.unit_id 
+        ? (item.multi_unit?.find(u => u.id === item.unit_id)?.unit_name || item.base_unit_name)
+        : item.base_unit_name
+
       if (item.qty > avail) {
-        return toast.error(`Stok ${item.product_name} tidak mencukupi! Tersedia: ${avail}, diminta: ${item.qty}`)
+        return toast.error(`Stok ${item.product_name} tidak mencukupi! Tersedia: ${avail} ${unitName}, diminta: ${item.qty} ${unitName}`)
       }
     }
 

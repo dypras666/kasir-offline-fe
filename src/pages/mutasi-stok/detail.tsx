@@ -48,8 +48,13 @@ export function MutasiStokDetailPage() {
     setActing(true)
     try {
       await api.post(`/stock-transfers/${id}/complete`)
+      toast.success("Transfer berhasil diselesaikan!")
       fetchData()
-    } catch (err: any) { toast(err?.message || err) }
+    } catch (err: any) {
+      console.error(err)
+      const msg = err.response?.data?.message || err.message || JSON.stringify(err)
+      toast.error(msg)
+    }
     finally { setActing(false) }
   }
 
