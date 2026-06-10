@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
 import { formatDate, formatDateTime } from "@/lib/date"
+import { formatMultiSatuan } from "@/lib/multi-unit"
 
 
 interface Supplier {
@@ -713,14 +714,35 @@ export function PurchasingPage() {
                 <Table className="min-w-[600px] md:min-w-full">
                    <TableHeader><TableRow><TableHead>Item</TableHead><TableHead className="text-right">Qty</TableHead><TableHead className="text-right">Harga</TableHead><TableHead className="text-right">Subtotal</TableHead></TableRow></TableHeader>
                    <TableBody>
-                     {detailItem.items?.map((it:any, idx:number) => (
-                       <TableRow key={idx}>
-                         <TableCell><div className="font-medium text-sm">{it.product?.name}</div><div className="text-[10px] text-muted-foreground">{it.product?.sku} • {it.warehouse?.name}</div></TableCell>
-                         <TableCell className="text-right text-sm">{it.qty} Pcs</TableCell>
-                         <TableCell className="text-right font-mono text-xs">Rp {Number(it.cost_price).toLocaleString()}</TableCell>
-                         <TableCell className="text-right font-mono font-bold text-sm">Rp {(it.qty * it.cost_price).toLocaleString()}</TableCell>
-                       </TableRow>
-                     ))}
+                     {(() => {
+                       const grouped = (detailItem.items || []).reduce((acc: any[], item: any) => {
+                         const key = `${item.product_id}-${item.warehouse_id}`;
+                         const existing = acc.find(x => `${x.product_id}-${x.warehouse_id}` === key);
+                         const qtyVal = Number(item.qty);
+                         const costVal = Number(item.cost_price);
+                         if (existing) {
+                           existing.qty += qtyVal;
+                           existing.subtotal += qtyVal * costVal;
+                           existing.cost_price = existing.subtotal / existing.qty;
+                         } else {
+                           acc.push({
+                             ...item,
+                             qty: qtyVal,
+                             subtotal: qtyVal * costVal,
+                           });
+                         }
+                         return acc;
+                       }, []);
+                       
+                       return grouped.map((it: any, idx: number) => (
+                         <TableRow key={idx}>
+                           <TableCell><div className="font-medium text-sm">{it.product?.name}</div><div className="text-[10px] text-muted-foreground">{it.product?.sku} • {it.warehouse?.name}</div></TableCell>
+                           <TableCell className="text-right text-sm font-semibold">{formatMultiSatuan(it.qty, it.product?.units, it.product?.unit_name || "Pcs")}</TableCell>
+                           <TableCell className="text-right font-mono text-xs">Rp {Number(it.cost_price).toLocaleString()}</TableCell>
+                           <TableCell className="text-right font-mono font-bold text-sm">Rp {it.subtotal.toLocaleString()}</TableCell>
+                         </TableRow>
+                       ));
+                     })()}
                    </TableBody>
                 </Table>
               </CardContent>
