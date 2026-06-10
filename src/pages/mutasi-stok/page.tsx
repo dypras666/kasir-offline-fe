@@ -25,6 +25,8 @@ interface StockTransfer {
   transfer_date: string
   from_warehouse: { id: number; name: string } | null
   to_warehouse: { id: number; name: string } | null
+  from_branch?: { id: number; name: string } | null
+  to_branch?: { id: number; name: string } | null
   items: TransferItem[]
 }
 
@@ -36,23 +38,30 @@ export function MutasiStokPage() {
   const [saving, setSaving] = useState(false)
 
   const [warehouses, setWarehouses] = useState<any[]>([])
+  const [branches, setBranches] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
   const [searchProd, setSearchProd] = useState("")
 
   const [form, setForm] = useState({
-    from_warehouse_id: "",
-    to_warehouse_id: "",
+    from_loc: "",
+    to_loc: "",
+    from_loc_type: "" as "warehouse" | "branch" | "",
+    to_loc_type: "" as "warehouse" | "branch" | "",
     transfer_date: new Date().toISOString().split("T")[0],
     items: [] as TransferItem[],
   })
 
   const fetchData = async () => {
     try {
-      const res: any = await api.get("/stock-transfers")
+      const [res, wh, br, pr]: any = await Promise.all([
+        api.get("/stock-transfers"),
+        api.get("/warehouses"),
+        api.get("/branches"),
+        api.get("/stock-report?per_page=200"),
+      ])
       setData(res.data ?? res)
-      const wh: any = await api.get("/warehouses")
       setWarehouses(wh.data ?? wh)
-      const pr: any = await api.get("/stock-report?per_page=200")
+      setBranches(br.data ?? br)
       setProducts(pr.data ?? pr)
     } catch (err) { console.error(err) }
     finally { setLoading(false) }
@@ -85,13 +94,42 @@ export function MutasiStokPage() {
   }
 
   const handleSave = async () => {
-    if (!form.from_warehouse_id || !form.to_warehouse_id) return alert("Pilih gudang asal & tujuan!")
-    if (form.from_warehouse_id === form.to_warehouse_id) return alert("Gudang asal & tujuan harus berbeda!")
+    if (!form.from_loc || !form.to_loc) return alert("Pilih lokasi asal & tujuan!")
+    if (form.from_loc === form.to_loc && form.from_loc_type === form.to_loc_type)
+      return alert("Lokasi asal & tujuan harus berbeda!")
+
+    // Convert form to API fields
+    const payload: any = {
+      transfer_date: form.transfer_date,
+      items: form.items,
+    }
+
+    if (form.from_loc_type === "warehouse") {
+      payload.from_warehouse_id = parseInt(form.from_loc)
+      payload.from_branch_id = null
+    } else {
+      payload.from_branch_id = parseInt(form.from_loc)
+      payload.from_warehouse_id = null
+    }
+
+    if (form.to_loc_type === "warehouse") {
+      payload.to_warehouse_id = parseInt(form.to_loc)
+      payload.to_branch_id = null
+    } else {
+      payload.to_branch_id = parseInt(form.to_loc)
+      payload.to_warehouse_id = null
+    }
+
     setSaving(true)
     try {
-      await api.post("/stock-transfers", form)
+      await api.post("/stock-transfers", payload)
       setOpen(false)
-      setForm({ from_warehouse_id: "", to_warehouse_id: "", transfer_date: new Date().toISOString().split("T")[0], items: [] })
+      setForm({
+        from_loc: "", to_loc: "",
+        from_loc_type: "", to_loc_type: "",
+        transfer_date: new Date().toISOString().split("T")[0],
+        items: [],
+      })
       fetchData()
     } catch (err: any) { alert(err?.message || err) }
     finally { setSaving(false) }
@@ -134,8 +172,16 @@ export function MutasiStokPage() {
                 <TableRow key={item.id}>
                   <TableCell className="text-xs font-mono text-muted-foreground">{idx + 1}</TableCell>
                   <TableCell>{item.transfer_date}</TableCell>
-                  <TableCell className="font-medium">{item.from_warehouse?.name ?? "-"}</TableCell>
-                  <TableCell className="font-medium">{item.to_warehouse?.name ?? "-"}</TableCell>
+                  <TableCell className="font-medium">
+                    {item.from_warehouse?.name || item.from_branch?.name || "-"}
+                    {item.from_warehouse && <Badge variant="outline" className="ml-1 text-[9px] px-1">Gudang</Badge>}
+                    {item.from_branch && <Badge variant="outline" className="ml-1 text-[9px] px-1">Cabang</Badge>}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {item.to_warehouse?.name || item.to_branch?.name || "-"}
+                    {item.to_warehouse && <Badge variant="outline" className="ml-1 text-[9px] px-1">Gudang</Badge>}
+                    {item.to_branch && <Badge variant="outline" className="ml-1 text-[9px] px-1">Cabang</Badge>}
+                  </TableCell>
                   <TableCell className="text-center">{item.items?.length ?? 0}</TableCell>
                   <TableCell>
                     {item.status === "completed" ? (
@@ -160,23 +206,49 @@ export function MutasiStokPage() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Buat Transfer Stok</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-4 py-4">
+          <div className="grid grid-cols-3 gap-4 py-4">
             <div className="space-y-2">
               <Label>Tanggal Transfer</Label>
               <Input type="date" value={form.transfer_date} onChange={e => setForm({...form, transfer_date: e.target.value})} />
             </div>
             <div className="space-y-2">
-              <Label>Gudang Asal</Label>
-              <Select value={form.from_warehouse_id} onChange={e => setForm({...form, from_warehouse_id: e.target.value})}>
+              <Label>Lokasi Asal</Label>
+              <Select
+                value={form.from_loc_type ? `${form.from_loc_type}_${form.from_loc}` : ""}
+                onChange={e => {
+                  const val = e.target.value
+                  if (!val) { setForm({...form, from_loc: "", from_loc_type: ""}); return }
+                  const [type, id] = val.split("_")
+                  setForm({...form, from_loc: id, from_loc_type: type as "warehouse"|"branch"})
+                }}
+              >
                 <option value="">-- Pilih Asal --</option>
-                {warehouses.map(wh => <option key={wh.id} value={wh.id}>{wh.name}</option>)}
+                <optgroup label="🏭 Gudang">
+                  {warehouses.map(wh => <option key={`warehouse_${wh.id}`} value={`warehouse_${wh.id}`}>{wh.name}</option>)}
+                </optgroup>
+                <optgroup label="🏪 Cabang">
+                  {branches.map(br => <option key={`branch_${br.id}`} value={`branch_${br.id}`}>{br.name}</option>)}
+                </optgroup>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Gudang Tujuan</Label>
-              <Select value={form.to_warehouse_id} onChange={e => setForm({...form, to_warehouse_id: e.target.value})}>
+              <Label>Lokasi Tujuan</Label>
+              <Select
+                value={form.to_loc_type ? `${form.to_loc_type}_${form.to_loc}` : ""}
+                onChange={e => {
+                  const val = e.target.value
+                  if (!val) { setForm({...form, to_loc: "", to_loc_type: ""}); return }
+                  const [type, id] = val.split("_")
+                  setForm({...form, to_loc: id, to_loc_type: type as "warehouse"|"branch"})
+                }}
+              >
                 <option value="">-- Pilih Tujuan --</option>
-                {warehouses.map(wh => <option key={wh.id} value={wh.id}>{wh.name}</option>)}
+                <optgroup label="🏭 Gudang">
+                  {warehouses.map(wh => <option key={`warehouse_${wh.id}`} value={`warehouse_${wh.id}`}>{wh.name}</option>)}
+                </optgroup>
+                <optgroup label="🏪 Cabang">
+                  {branches.map(br => <option key={`branch_${br.id}`} value={`branch_${br.id}`}>{br.name}</option>)}
+                </optgroup>
               </Select>
             </div>
           </div>

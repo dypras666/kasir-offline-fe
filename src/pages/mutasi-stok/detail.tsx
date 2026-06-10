@@ -20,6 +20,8 @@ interface StockTransfer {
   transfer_date: string
   from_warehouse?: { name: string }
   to_warehouse?: { name: string }
+  from_branch?: { name: string }
+  to_branch?: { name: string }
   items: TransferItem[]
 }
 
@@ -143,7 +145,12 @@ export function MutasiStokDetailPage() {
                 </div>
                 <div>
                   <div className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">Dari</div>
-                  <div className="font-semibold">{data.from_warehouse?.name ?? "-"}</div>
+                  <div className="font-semibold">
+                    {data.from_warehouse?.name || data.from_branch?.name || "-"}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    {data.from_warehouse ? "Gudang" : data.from_branch ? "Cabang" : ""}
+                  </div>
                 </div>
               </div>
               <div className="flex justify-center py-1">
@@ -155,7 +162,12 @@ export function MutasiStokDetailPage() {
                 </div>
                 <div>
                   <div className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">Ke</div>
-                  <div className="font-semibold">{data.to_warehouse?.name ?? "-"}</div>
+                  <div className="font-semibold">
+                    {data.to_warehouse?.name || data.to_branch?.name || "-"}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    {data.to_warehouse ? "Gudang" : data.to_branch ? "Cabang" : ""}
+                  </div>
                 </div>
               </div>
             </CardContent>
