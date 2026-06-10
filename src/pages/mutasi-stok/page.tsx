@@ -402,7 +402,7 @@ export function MutasiStokPage() {
                         </Select>
                       </TableCell>
                       <TableCell className="text-center font-mono text-sm font-semibold text-emerald-600">
-                        {avail}
+                        {avail} {item.unit_id ? (item.multi_unit?.find(u => u.id === item.unit_id)?.unit_name || item.base_unit_name) : item.base_unit_name}
                       </TableCell>
                       <TableCell>
                         <Input
