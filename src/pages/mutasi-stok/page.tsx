@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { ArrowLeftRight, Plus, Loader2, Search, Trash2 } from "lucide-react"
 import { toast } from "sonner"
+import { formatMultiSatuan } from "@/lib/multi-unit"
 
 interface MultiUnit {
   id: number
@@ -153,7 +154,8 @@ export function MutasiStokPage() {
     if (!item.unit_id) return item.stock_available || 0
     const unit = item.multi_unit?.find(u => u.id === item.unit_id)
     if (!unit) return 0
-    return unit.qty // Ini sudah dihitung di backend (total_stock / conversion)
+    // Fix: qty dari hitungan Pcs ke Dos adalah baseStock / conversion di floor
+    return Math.floor((item.stock_available || 0) / unit.conversion)
   }
 
   const handleSave = async () => {
@@ -161,7 +163,7 @@ export function MutasiStokPage() {
     if (form.from_loc === form.to_loc && form.from_loc_type === form.to_loc_type)
       return toast("Lokasi asal & tujuan harus berbeda!")
 
-    // Validasi stok
+    // Validasi stok base
     for (const item of form.items) {
       const avail = getStockForUnit(item)
       const unitName = item.unit_id 
@@ -406,7 +408,7 @@ export function MutasiStokPage() {
                         </Select>
                       </TableCell>
                       <TableCell className="text-center font-mono text-sm font-semibold text-emerald-600">
-                        {avail} {item.unit_id ? (item.multi_unit?.find(u => u.id === item.unit_id)?.unit_name || item.base_unit_name) : item.base_unit_name}
+                        {formatMultiSatuan(item.stock_available || 0, item.multi_unit, item.base_unit_name)}
                       </TableCell>
                       <TableCell>
                         <Input
