@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { api } from "@/lib/api"
 import { Button } from "@/components/ui/button"
@@ -17,6 +17,7 @@ interface TransferItem {
   qty: number
   product_name?: string
   sku?: string
+  stock_available?: number
 }
 
 interface StockTransfer {
@@ -30,6 +31,13 @@ interface StockTransfer {
   items: TransferItem[]
 }
 
+interface SourceProduct {
+  id: number
+  name: string
+  sku: string
+  stock: number
+}
+
 export function MutasiStokPage() {
   const navigate = useNavigate()
   const [data, setData] = useState<StockTransfer[]>([])
@@ -39,7 +47,8 @@ export function MutasiStokPage() {
 
   const [warehouses, setWarehouses] = useState<any[]>([])
   const [branches, setBranches] = useState<any[]>([])
-  const [products, setProducts] = useState<any[]>([])
+  const [sourceProducts, setSourceProducts] = useState<SourceProduct[]>([])
+  const [loadingProducts, setLoadingProducts] = useState(false)
   const [searchProd, setSearchProd] = useState("")
 
   const [form, setForm] = useState({
@@ -53,32 +62,47 @@ export function MutasiStokPage() {
 
   const fetchData = async () => {
     try {
-      const [res, wh, br, pr]: any = await Promise.all([
+      const [res, wh, br]: any = await Promise.all([
         api.get("/stock-transfers"),
         api.get("/warehouses"),
         api.get("/branches"),
-        api.get("/stock-report?per_page=200"),
       ])
       setData(res.data ?? res)
       setWarehouses(wh.data ?? wh)
       setBranches(br.data ?? br)
-      setProducts(pr.data ?? pr)
     } catch (err) { console.error(err) }
     finally { setLoading(false) }
   }
 
   useEffect(() => { fetchData() }, [])
 
-  const filteredProducts = products.filter((p: any) =>
+  const loadSourceProducts = useCallback(async (type: string, id: string) => {
+    if (!type || !id) { setSourceProducts([]); return }
+    setLoadingProducts(true)
+    const param = type === 'warehouse' ? `warehouse_id=${id}` : `branch_id=${id}`
+    try {
+      const res: any = await api.get(`/stock-report?${param}&per_page=999`)
+      const list: SourceProduct[] = (res.data ?? res).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        sku: p.sku,
+        stock: p.stock,
+      }))
+      setSourceProducts(list)
+    } catch (err) { console.error(err) }
+    finally { setLoadingProducts(false) }
+  }, [])
+
+  const filteredProducts = sourceProducts.filter((p: any) =>
     p.name?.toLowerCase().includes(searchProd.toLowerCase()) ||
     p.sku?.toLowerCase().includes(searchProd.toLowerCase())
-  )
+  ).filter(p => p.stock > 0)
 
-  const addItem = (product: any) => {
+  const addItem = (product: SourceProduct) => {
     if (form.items.some(i => i.product_id === product.id)) return
     setForm({
       ...form,
-      items: [...form.items, { product_id: product.id, unit_id: null, qty: 1, product_name: product.name, sku: product.sku }]
+      items: [...form.items, { product_id: product.id, unit_id: null, qty: 1, product_name: product.name, sku: product.sku, stock_available: product.stock }]
     })
     setSearchProd("")
   }
@@ -98,10 +122,16 @@ export function MutasiStokPage() {
     if (form.from_loc === form.to_loc && form.from_loc_type === form.to_loc_type)
       return alert("Lokasi asal & tujuan harus berbeda!")
 
-    // Convert form to API fields
+    // Validasi stok
+    for (const item of form.items) {
+      if (item.qty > (item.stock_available || 0)) {
+        return alert(`Stok ${item.product_name} tidak mencukupi! Tersedia: ${item.stock_available}, diminta: ${item.qty}`)
+      }
+    }
+
     const payload: any = {
       transfer_date: form.transfer_date,
-      items: form.items,
+      items: form.items.map(({ stock_available, ...rest }) => rest),
     }
 
     if (form.from_loc_type === "warehouse") {
@@ -130,6 +160,7 @@ export function MutasiStokPage() {
         transfer_date: new Date().toISOString().split("T")[0],
         items: [],
       })
+      setSourceProducts([])
       fetchData()
     } catch (err: any) { alert(err?.message || err) }
     finally { setSaving(false) }
@@ -217,9 +248,10 @@ export function MutasiStokPage() {
                 value={form.from_loc_type ? `${form.from_loc_type}_${form.from_loc}` : ""}
                 onChange={e => {
                   const val = e.target.value
-                  if (!val) { setForm({...form, from_loc: "", from_loc_type: ""}); return }
+                  if (!val) { setForm({...form, from_loc: "", from_loc_type: ""}); setSourceProducts([]); return }
                   const [type, id] = val.split("_")
                   setForm({...form, from_loc: id, from_loc_type: type as "warehouse"|"branch"})
+                  loadSourceProducts(type, id)
                 }}
               >
                 <option value="">-- Pilih Asal --</option>
@@ -268,20 +300,27 @@ export function MutasiStokPage() {
                 <Search className="h-4 w-4 text-muted-foreground shrink-0" />
                 <input
                   className="flex-1 bg-transparent outline-none text-sm"
-                  placeholder="Cari produk..."
+                  placeholder={!form.from_loc_type ? "Pilih lokasi asal dulu..." : "Cari produk..."}
                   value={searchProd}
+                  disabled={!form.from_loc_type}
                   onChange={e => setSearchProd(e.target.value)}
                 />
+                {loadingProducts && <Loader2 className="h-4 w-4 animate-spin" />}
               </div>
-              {searchProd && (
+              {form.from_loc_type && searchProd && !loadingProducts && (
                 <div className="max-h-32 overflow-y-auto border-t mt-1 pt-1">
-                  {filteredProducts.slice(0, 10).map((p: any) => (
+                  {filteredProducts.length === 0 ? (
+                    <div className="text-xs text-muted-foreground px-1 py-2">Tidak ada produk dengan stok tersedia</div>
+                  ) : filteredProducts.slice(0, 10).map((p: any) => (
                     <div key={p.id} className="flex items-center justify-between px-1 py-1.5 hover:bg-muted/50 rounded cursor-pointer" onClick={() => addItem(p)}>
                       <div className="text-sm">
                         <span className="font-medium">{p.name}</span>
                         <span className="text-muted-foreground ml-2 font-mono text-xs">{p.sku}</span>
                       </div>
-                      <Plus className="h-3 w-3 text-muted-foreground" />
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono text-emerald-600 font-semibold">Stok: {p.stock}</span>
+                        <Plus className="h-3 w-3 text-muted-foreground" />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -293,21 +332,32 @@ export function MutasiStokPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Produk</TableHead>
-                  <TableHead className="w-24 text-center">Jumlah</TableHead>
+                  <TableHead className="w-16 text-center">Stok</TableHead>
+                  <TableHead className="w-24 text-center">Transfer</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {form.items.length === 0 ? (
-                  <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground">Cari & pilih produk di atas</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Pilih lokasi asal & cari produk di atas</TableCell></TableRow>
                 ) : form.items.map((item, idx) => (
                   <TableRow key={`${item.product_id}-${idx}`}>
                     <TableCell>
                       <div className="font-medium">{item.product_name}</div>
                       <div className="text-xs text-muted-foreground font-mono">{item.sku}</div>
                     </TableCell>
+                    <TableCell className="text-center font-mono text-sm font-semibold text-emerald-600">
+                      {item.stock_available}
+                    </TableCell>
                     <TableCell>
-                      <Input type="number" min={1} className="h-8 text-center" value={item.qty} onChange={e => updateQty(idx, parseInt(e.target.value) || 1)} />
+                      <Input
+                        type="number"
+                        min={1}
+                        max={item.stock_available}
+                        className={`h-8 text-center ${item.qty > (item.stock_available || 0) ? 'border-red-500 text-red-500' : ''}`}
+                        value={item.qty}
+                        onChange={e => updateQty(idx, parseInt(e.target.value) || 1)}
+                      />
                     </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => removeItem(idx)}>
