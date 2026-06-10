@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { api } from "@/lib/api"
 import { Loader2, FileText, Scale, BookOpen, Banknote, Download, CheckCircle2, AlertTriangle } from "lucide-react"
+import { formatDate } from "@/lib/date"
+
 
 type AccountLine = { code: string; name: string; amount: number }
 type Period = { from?: string; to: string }
@@ -443,7 +445,7 @@ function BukuBesar() {
                 <tbody className="divide-y">
                   {entries.map((e) => (
                     <tr key={e.id} className="hover:bg-muted/50">
-                      <td className="px-4 py-2 text-xs text-muted-foreground">{e.date}</td>
+                      <td className="px-4 py-2 text-xs text-muted-foreground">{formatDate(e.date)}</td>
                       <td className="px-4 py-2 text-xs font-mono text-muted-foreground">{e.reference_no || "-"}</td>
                       <td className="px-4 py-2">{e.description}</td>
                       <td className="px-4 py-2 text-right">{e.debit > 0 ? fmt(e.debit) : "-"}</td>

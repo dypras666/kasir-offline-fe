@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Loader2, ArrowLeft, CheckCircle, XCircle, ArrowLeftRight, Package } from "lucide-react"
 import { toast } from "sonner"
+import { formatDate } from "@/lib/date"
 
 interface TransferItem {
   id: number
@@ -80,7 +81,7 @@ export function MutasiStokDetailPage() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Transfer #{data.id}</h1>
-            <p className="text-sm text-muted-foreground">{data.transfer_date}</p>
+            <p className="text-sm text-muted-foreground">{formatDate(data.transfer_date)}</p>
           </div>
         </div>
         <div className="flex gap-2">

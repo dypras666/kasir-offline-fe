@@ -12,6 +12,7 @@ import { Select } from "@/components/ui/select"
 import { ArrowLeftRight, Plus, Loader2, Search, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { formatMultiSatuan } from "@/lib/multi-unit"
+import { formatDate } from "@/lib/date"
 
 interface MultiUnit {
   id: number
@@ -248,7 +249,7 @@ export function MutasiStokPage() {
               ) : data.map((item, idx) => (
                 <TableRow key={item.id}>
                   <TableCell className="text-xs font-mono text-muted-foreground">{idx + 1}</TableCell>
-                  <TableCell>{item.transfer_date}</TableCell>
+                  <TableCell>{formatDate(item.transfer_date)}</TableCell>
                   <TableCell className="font-medium">
                     {item.from_warehouse?.name || item.from_branch?.name || "-"}
                     {item.from_warehouse && <Badge variant="outline" className="ml-1 text-[9px] px-1">Gudang</Badge>}

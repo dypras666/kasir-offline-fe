@@ -7,6 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Loader2, ArrowLeft, FileDown, FileText, ClipboardList, Package, TrendingUp, TrendingDown } from "lucide-react"
 import { formatMultiSatuan } from "@/lib/multi-unit"
+import { formatDateTime } from "@/lib/date"
+
 
 const BASE = import.meta.env.VITE_API_URL || ""
 const TOKEN = () => localStorage.getItem("token")
@@ -75,19 +77,6 @@ export function StokOpnameDetailPage() {
 
   const fmt = (n: number) => n.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
-  const formatDate = (dateStr: string) => {
-    try {
-      const date = new Date(dateStr)
-      if (isNaN(date.getTime())) return dateStr
-      return date.toLocaleString("id-ID", {
-        year: "numeric", month: "short", day: "numeric",
-        hour: "2-digit", minute: "2-digit"
-      })
-    } catch {
-      return dateStr
-    }
-  }
-
   const handlePdf = () => {
     const token = TOKEN()
     const url = `${BASE}/api/v1/stok-opnames/${id}/pdf`
@@ -129,7 +118,7 @@ export function StokOpnameDetailPage() {
     ]
     const csvContent = [
       `Rekap Stok Opname: ${data.kode_so}`,
-      `Tanggal: ${data.tanggal}`,
+      `Tanggal: ${formatDateTime(data.tanggal)}`,
       `Gudang: ${data.warehouse?.name ?? "-"}`,
       `Status: ${data.status === "completed" ? "Selesai" : "Draft"}`,
       "",
@@ -159,7 +148,7 @@ export function StokOpnameDetailPage() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight">{data.kode_so}</h1>
             <p className="text-sm text-muted-foreground">
-              {formatDate(data.tanggal)} &middot; {data.warehouse?.name ?? "-"}
+              {formatDateTime(data.tanggal)} &middot; {data.warehouse?.name ?? "-"}
               &middot; {data.status === "completed" ? "✓ Selesai" : "Draft"}
             </p>
           </div>

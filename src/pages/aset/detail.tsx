@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { api } from "@/lib/api"
 import { Loader2, ArrowLeft, Building2, Clock, DollarSign, Layers } from "lucide-react"
+import { formatDate } from "@/lib/date"
+
 
 interface AssetItem {
   id: number
@@ -120,7 +122,7 @@ export function AsetDetailPage() {
             <div>
               <p className="text-xs text-muted-foreground">Lokasi</p>
               <p className="text-lg font-bold truncate">{item.location_name !== '-' ? item.location_name : 'Pusat'}</p>
-              <p className="text-[10px] text-muted-foreground">{item.purchase_date}</p>
+              <p className="text-[10px] text-muted-foreground">{formatDate(item.purchase_date)}</p>
             </div>
           </CardContent>
         </Card>
@@ -149,7 +151,7 @@ export function AsetDetailPage() {
             </div>
             <div className="flex justify-between sm:block">
               <dt className="text-muted-foreground">Tgl Perolehan</dt>
-              <dd className="font-medium sm:mt-0.5">{item.purchase_date}</dd>
+              <dd className="font-medium sm:mt-0.5">{formatDate(item.purchase_date)}</dd>
             </div>
             <div className="flex justify-between sm:block">
               <dt className="text-muted-foreground">Status</dt>

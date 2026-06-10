@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label"
 import { api } from "@/lib/api"
 import { Loader2, Search, HandCoins, ArrowDownLeft } from "lucide-react"
+import { formatDate } from "@/lib/date"
+
 
 interface PaymentMethod {
   id: number
@@ -121,7 +123,7 @@ export function PiutangPage() {
                       <div className="text-xs text-muted-foreground mt-0.5">
                         Rp {Number(item.total_amount).toLocaleString('id-ID')}
                         {remaining > 0 ? ` | Sisa: Rp ${remaining.toLocaleString('id-ID')}` : ''}
-                        {item.due_date ? ` | Jatuh tempo: ${item.due_date}` : ''}
+                        {item.due_date ? ` | Jatuh tempo: ${formatDate(item.due_date)}` : ''}
                       </div>
                     </div>
                     <div className="flex gap-1 ml-4 shrink-0">

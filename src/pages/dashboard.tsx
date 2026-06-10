@@ -22,6 +22,8 @@ import {
 } from "lucide-react"
 import { api } from "@/lib/api"
 import { formatMultiSatuan } from "@/lib/multi-unit"
+import { formatDate } from "@/lib/date"
+
 
 // Backend shape
 interface DashboardJson {
@@ -192,7 +194,7 @@ export function DashboardPage() {
                         </div>
                       </TableCell>
                       <TableCell className="font-medium whitespace-nowrap">{formatRupiah(tx.total)}</TableCell>
-                      <TableCell className="text-right text-muted-foreground text-xs hidden sm:table-cell">{tx.date}</TableCell>
+                      <TableCell className="text-right text-muted-foreground text-xs hidden sm:table-cell">{formatDate(tx.date)}</TableCell>
                     </TableRow>
                   ))}
                   {(!data?.recent_sales || data.recent_sales.length === 0) && (

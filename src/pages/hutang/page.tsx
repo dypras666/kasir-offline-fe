@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label"
 import { api } from "@/lib/api"
 import { useShowFilters } from "@/hooks/useShowFilters"
 import { Loader2, Search, CreditCard, ArrowUpRight, Calendar, SlidersHorizontal, X } from "lucide-react"
+import { formatDate } from "@/lib/date"
+
 
 interface PaymentMethod {
   id: number
@@ -208,7 +210,7 @@ export function HutangPage() {
                       <div className="text-xs text-muted-foreground mt-0.5">
                         Rp {Number(item.amount).toLocaleString('id-ID')}
                         {remaining > 0 ? ` | Sisa: Rp ${remaining.toLocaleString('id-ID')}` : ''}
-                        {item.due_date ? ` | Jatuh tempo: ${item.due_date}` : ''}
+                        {item.due_date ? ` | Jatuh tempo: ${formatDate(item.due_date)}` : ''}
                       </div>
                     </div>
                     <div className="flex gap-1 ml-4 shrink-0">

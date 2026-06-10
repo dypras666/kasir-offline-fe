@@ -10,6 +10,8 @@ import { Select } from "@/components/ui/select"
 import { api } from "@/lib/api"
 import { Loader2, Search, Building2, RefreshCw, Clock, DollarSign, Package, FileText, Pencil } from "lucide-react"
 import { toast } from "sonner"
+import { formatDate } from "@/lib/date"
+
 
 interface AssetItem {
   id: number
@@ -284,7 +286,7 @@ export function AsetPage() {
                           {item.quantity > 1 && <span>x{item.quantity}</span>}
                           <span>Peny: Rp {Math.round(monthlyDep).toLocaleString('id-ID')}/bln</span>
                           {item.location_name !== '-' && <span>📍 {item.location_name}</span>}
-                          {item.purchase_date && <span>{item.purchase_date}</span>}
+                          {item.purchase_date && <span>{formatDate(item.purchase_date)}</span>}
                         </div>
                       </div>
                     </div>

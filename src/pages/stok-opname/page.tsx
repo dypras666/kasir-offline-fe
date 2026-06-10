@@ -12,6 +12,7 @@ import { Select } from "@/components/ui/select"
 import { RefreshCw, Plus, Loader2 } from "lucide-react"
 import { formatMultiSatuan } from "@/lib/multi-unit"
 import { toast } from "sonner"
+import { formatDateTime } from "@/lib/date"
 
 const nowLocal = () => {
   const d = new Date()
@@ -167,7 +168,7 @@ export function StokOpnamePage() {
                 <TableRow key={item.id}>
                   <TableCell className="text-xs font-mono text-muted-foreground">{idx + 1}</TableCell>
                   <TableCell className="font-mono text-xs font-semibold">{item.kode_so}</TableCell>
-                  <TableCell>{new Date(item.tanggal).toLocaleString("id-ID", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</TableCell>
+                  <TableCell>{formatDateTime(item.tanggal)}</TableCell>
                   <TableCell className="font-medium">{item.warehouse?.name || (item as any).branch?.name}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{item.keterangan || "-"}</TableCell>
                   <TableCell>

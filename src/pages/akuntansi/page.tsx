@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { api } from "@/lib/api"
 import { Loader2, BookOpen, CheckCircle2, AlertTriangle } from "lucide-react"
+import { formatDate } from "@/lib/date"
+
 
 interface ClosingItem {
   id: number
@@ -105,7 +107,7 @@ export function AkuntansiPage() {
                     <span className="text-sm font-medium">{c.year}</span>
                     <div className="flex items-center gap-2">
                       <Badge variant={c.status === 'closed' ? 'default' : 'secondary'} className="text-[10px]">{c.status}</Badge>
-                      <span className="text-xs text-muted-foreground">{c.closed_at || c.created_at}</span>
+                      <span className="text-xs text-muted-foreground">{formatDate(c.closed_at || c.created_at)}</span>
                     </div>
                   </div>
                 ))}

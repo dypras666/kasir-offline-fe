@@ -13,6 +13,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
+import { formatDate, formatDateTime } from "@/lib/date"
+
 
 interface Supplier {
   id: number
@@ -155,28 +157,6 @@ export function PurchasingPage() {
   const [data, setData] = useState<PurchaseInvoice[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-
-  const formatDate = (d: string | null | undefined) => {
-    if (!d) return "-"
-    try {
-      const date = new Date(d)
-      if (isNaN(date.getTime())) return d
-      return date.toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" })
-    } catch {
-      return d
-    }
-  }
-
-  const formatDateTime = (d: string | null | undefined) => {
-    if (!d) return "-"
-    try {
-      const date = new Date(d)
-      if (isNaN(date.getTime())) return d
-      return date.toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
-    } catch {
-      return d
-    }
-  }
 
   // Master Data
   const [products, setProducts] = useState<Product[]>([])

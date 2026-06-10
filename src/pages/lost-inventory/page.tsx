@@ -6,6 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { AlertTriangle, Plus } from "lucide-react"
 import { toast } from "sonner"
+import { formatDate } from "@/lib/date"
+
 
 interface LostInventory {
   id: number
@@ -63,7 +65,7 @@ export function LostInventoryPage() {
               ) : data.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-mono text-xs">{item.reference_no}</TableCell>
-                  <TableCell>{item.date}</TableCell>
+                  <TableCell>{formatDate(item.date)}</TableCell>
                   <TableCell className="font-medium">{item.warehouse?.name}</TableCell>
                   <TableCell className="font-bold text-red-500">Rp {Number(item.total_value).toLocaleString()}</TableCell>
                   <TableCell>
