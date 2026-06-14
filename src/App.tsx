@@ -14,6 +14,7 @@ import { StokOpnameDetailPage } from "@/pages/stok-opname/detail"
 import { MutasiStokPage } from "@/pages/mutasi-stok/page"
 import { MutasiStokDetailPage } from "@/pages/mutasi-stok/detail"
 import { LostInventoryPage } from "@/pages/lost-inventory/page"
+import { SaleReturnPage } from "@/pages/sale-return/page"
 import { SupplierPage } from "@/pages/supplier/page"
 import { CustomerPage } from "@/pages/pelanggan/page"
 import { GudangPage } from "@/pages/gudang/page"
@@ -55,6 +56,7 @@ function App() {
             <Route path="/mutasi-stok" element={<ProtectedRoute><AppLayout><MutasiStokPage /></AppLayout></ProtectedRoute>} />
             <Route path="/mutasi-stok/:id" element={<ProtectedRoute><AppLayout><MutasiStokDetailPage /></AppLayout></ProtectedRoute>} />
             <Route path="/lost-inventory" element={<ProtectedRoute><AppLayout><LostInventoryPage /></AppLayout></ProtectedRoute>} />
+            <Route path="/sale-return" element={<ProtectedRoute><AppLayout><SaleReturnPage /></AppLayout></ProtectedRoute>} />
             <Route path="/supplier" element={<ProtectedRoute><AppLayout><SupplierPage /></AppLayout></ProtectedRoute>} />
             <Route path="/pelanggan" element={<ProtectedRoute><AppLayout><CustomerPage /></AppLayout></ProtectedRoute>} />
             <Route path="/gudang" element={<ProtectedRoute><AppLayout><GudangPage /></AppLayout></ProtectedRoute>} />

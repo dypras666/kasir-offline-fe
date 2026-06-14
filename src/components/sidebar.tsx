@@ -19,6 +19,7 @@ import {
   RefreshCw,
   ArrowLeftRight,
   AlertTriangle,
+  RotateCcw,
   Layers,
 } from "lucide-react"
 
@@ -30,6 +31,7 @@ const navItems = [
   { label: "Stok Opname", icon: RefreshCw, href: "/stok-opname" },
   { label: "Mutasi Stok", icon: ArrowLeftRight, href: "/mutasi-stok" },
   { label: "Lost Inventory", icon: AlertTriangle, href: "/lost-inventory" },
+  { label: "Retur Penjualan", icon: RotateCcw, href: "/sale-return" },
   { label: "Hutang", icon: CreditCard, href: "/hutang" },
   { label: "Piutang", icon: HandCoins, href: "/piutang" },
   { label: "Aset", icon: Building2, href: "/aset" },
